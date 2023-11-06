@@ -7,8 +7,17 @@
         mc:Ignorable="d"
         Title="NC Mill Composer" 
         Icon="Resources\AppIcon\appicon.png"
-        WindowState="Maximized">
-    <Grid x:Name="MainLayout">
+        WindowState="Maximized"
+        SnapsToDevicePixels="True"
+        Loaded="OnLoad">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="140"/>
             <RowDefinition/>
@@ -19,16 +28,14 @@
         </Grid.ColumnDefinitions>
 
         <!-- Кнопки в левом верхнем углу -->
-        <Grid Grid.Row="0" Grid.Column="0">
+        <Grid Grid.Row="0" Grid.Column="0" Margin="5,5,5,5">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <Button x:Name="FileOpenButton" Grid.Row="0" Content="Открыть" Margin="0,0,0,5"/>
-            <Border Grid.Row="1">
-                <TextBox x:Name="TextBox18"/>
-            </Border>
+            <Button x:Name="FileOpenButton" Grid.Row="0" Click="FileOpen_ButtonClick" Content="Открыть" Margin="0,0,0,5"/>
+            <TextBox x:Name="TextBox18" TextAlignment="Left" Grid.Row="1" />
             <Button x:Name="FileSaveAndCloseButton" Grid.Row="2" Content="Сохранить и закрыть" Margin="0,5,0,0"/>
         </Grid>
         <!---->
@@ -52,245 +59,216 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Row="0" Grid.Column="0">
-                <Grid>
+            <Border Grid.Row="0" Grid.Column="0" >
+                <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
                         <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"  Content="Старт Z  за  Проход  mm  Итог Z" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <TextBox x:Name="StartZTextBox" />
-                    </Border>
-                    <Border Grid.Row="1" Grid.Column="1" >
-                        <TextBox x:Name="PassTextBox" />
-                    </Border>
-                    <Border Grid.Row="1" Grid.Column="2" >
-                        <TextBox x:Name="ResultZTextBox" />
-                    </Border>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" FontSize="12" HorizontalAlignment="Center" Content="Старт Z  за   Проход   mm  Итог Z" />
+                    <TextBox x:Name="StartZTextBox" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="PassTextBox"  Grid.Row="1" Grid.Column="2" />
+                    <TextBox x:Name="ResultZTextBox" Grid.Row="1" Grid.Column="4" />
                 </Grid>
             </Border>
 
             <Border Grid.Row="1" Grid.Column="0">
-                <Grid>
+                <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
                         <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Content="Z неопасно" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <TextBox x:Name="SafeZTextBox" />
-                    </Border>
-                    <Label Grid.Row="0" Grid.Column="1" Content="D фрезы" />
-                    <Border Grid.Row="1" Grid.Column="1" >
-                        <TextBox x:Name="MillDTextBox" />
-                    </Border>
-                    <Label Grid.Row="0" Grid.Column="2" Content="Шпиндель" />
-                    <Border Grid.Row="1" Grid.Column="2" >
-                        <TextBox x:Name="MillTextBox" />
-                    </Border>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Content="Z неопасно" />
+                    <TextBox x:Name="SafeZTextBox" Grid.Row="1" Grid.Column="0" />
+                    <Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="D фрезы" />
+                    <TextBox x:Name="MillDTextBox" Grid.Row="1" Grid.Column="2" />
+                    <Label Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Content="Шпиндель" />
+                    <TextBox x:Name="MillTextBox" Grid.Row="1" Grid.Column="4" />
                 </Grid>
             </Border>
 
             <Border Grid.Row="0" Grid.Column="1">
-                <Grid>
+                <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Content="G01 подача mm/мин Z" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <TextBox x:Name="G01TextBox" />
-                    </Border>
-                    <Border Grid.Row="1" Grid.Column="1" >
-                        <TextBox x:Name="MinZTextBox" />
-                    </Border>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="G01 подача mm/мин Z" />
+                    <TextBox x:Name="G01TextBox" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="MinZTextBox" Grid.Row="1" Grid.Column="2" />
                 </Grid>
             </Border>
 
             <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
+                        <ColumnDefinition Width="5"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Content="Обработка Закрытых векторов" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <ComboBox x:Name="CloseVectorProcessingCombobox1" />
-                    </Border>
-                    <Border Grid.Row="1" Grid.Column="1" >
-                        <ComboBox x:Name="CloseVectorProcessingCombobox2" />
-                    </Border>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="Обработка Закрытых векторов" />
+                    <ComboBox x:Name="CloseVectorProcessingCombobox1" Grid.Row="1" Grid.Column="0" />
+                    <ComboBox x:Name="CloseVectorProcessingCombobox2" Grid.Row="1" Grid.Column="2" />
                 </Grid>
             </Border>
 
             <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <Label Grid.Row="0" Content="Привязка Точек =0= -1- -2-" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <ComboBox x:Name="PointsBindingCombobox" />
-                    </Border>
+                    <Label Grid.Row="0" HorizontalAlignment="Center" Content="Привязка Точек =0= -1- -2-" />
+                    <ComboBox x:Name="PointsBindingCombobox" Grid.Row="1" Grid.Column="0" />
                 </Grid>
             </Border>
 
             <Border Grid.Row="1" Grid.Column="3">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Content="Открытые вектора" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <ComboBox x:Name="OpenVectorsCombobox" />
-                    </Border>
+                    <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Открытые вектора" />
+                    <ComboBox x:Name="OpenVectorsCombobox" Grid.Row="1" Grid.Column="0" />
                 </Grid>
             </Border>
 
             <Border Grid.Row="0" Grid.Column="4">
-                <Grid>
+                <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Content="X mm  Точка -1-  Y mm" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <TextBox x:Name="Point1XTextBox" />
-                    </Border>
-                    <Border Grid.Row="1" Grid.Column="1" >
-                        <TextBox x:Name="Point1YTextBox" />
-                    </Border>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="X mm  Точка -1-  Y mm" />
+                    <TextBox x:Name="Point1XTextBox" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="Point1YTextBox" Grid.Row="1" Grid.Column="2" />
                 </Grid>
             </Border>
 
             <Border Grid.Row="1" Grid.Column="4">
-                <Grid>
+                <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Content="X mm  Точка -2-  Y mm" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <TextBox x:Name="Point2XTextBox" />
-                    </Border>
-                    <Border Grid.Row="1" Grid.Column="1" >
-                        <TextBox x:Name="Point2YTextBox" />
-                    </Border>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="X mm  Точка -2-  Y mm" />
+                    <TextBox x:Name="Point2XTextBox" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="Point2YTextBox" Grid.Row="1" Grid.Column="2" />
                 </Grid>
             </Border>
 
             <Border Grid.Row="0" Grid.Column="5" Grid.ColumnSpan="2">
-                <Grid>
+                <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Content="Лазер Y" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <TextBox x:Name="LaserYTextBox" />
-                    </Border>
+                    <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Лазер Y" />
+                    <TextBox x:Name="LaserYTextBox" Grid.Row="1" Grid.Column="0" />
                 </Grid>
             </Border>
 
             <Border Grid.Row="0" Grid.Column="7">
-                <Grid>
+                <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Content="Скрыть &lt;" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <TextBox x:Name="HideTextBox" />
-                    </Border>
+                    <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Скрыть &lt;" />
+                    <TextBox x:Name="HideTextBox" Grid.Row="1" Grid.Column="0" />
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="1" Grid.Column="5">
-                <Button x:Name="RotateButton" Padding="5" >
+            <Grid Grid.Row="1" Grid.Column="5" Margin="5">
+                <Button x:Name="RotateButton" Padding="5" Height="40" >
                     <Image Source="Resources\Images\rotate.png" />
                 </Button>
             </Grid>
 
             <Border Grid.Row="1" Grid.Column="6" Grid.ColumnSpan="2">
-                <Grid  >
+                <Grid HorizontalAlignment="Center">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0" Content="Масштаб" />
-                    <Label Grid.Row="0" Grid.Column="1" Content="Авто" />
-                    <Border Grid.Row="1" Grid.Column="0" >
-                        <TextBox x:Name="ScaleTextBox" />
-                    </Border>
-                    <CheckBox x:Name="ScaleAutoCheckBox" Grid.Row="1" Grid.Column="1" />
+                    <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Масштаб" />
+                    <Label Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" Content="Авто" />
+                    <TextBox x:Name="ScaleTextBox" Grid.Row="1" Grid.Column="0" />
+                    <CheckBox x:Name="ScaleAutoCheckBox" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="0" Grid.Column="8" Grid.RowSpan="2">
+            <Grid Grid.Row="0" Grid.Column="8" Grid.RowSpan="2" Margin="5">
                 <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="40"/>
                 </Grid.RowDefinitions>
                 <Button x:Name="Folder1Button" Grid.Row="0" Padding="5" >
                     <Image Source="Resources\Images\folder1.png" />
                 </Button>
-                <Button x:Name="Folder2Button" Grid.Row="1" Padding="5" >
+                <Button x:Name="Folder2Button" Grid.Row="2" Padding="5" >
                     <Image Source="Resources\Images\folder2.png" />
                 </Button>
-                <Button x:Name="Folder_ncButton" Grid.Row="2" Padding="5" >
+                <Button x:Name="Folder_ncButton" Grid.Row="4" Padding="5" >
                     <Image Source="Resources\Images\folder_nc.png" />
                 </Button>
             </Grid>
 
-            <Grid Grid.Row="0" Grid.Column="9" Grid.RowSpan="2">
-                <Border >
-                    <TextBlock x:Name="DebugTextBox" Text="Hello" />
-                </Border>
+            <Grid Grid.Row="0" Grid.Column="9" Grid.RowSpan="2" Margin="5">
+                <TextBox x:Name="DebugTextBox" IsReadOnly="True" FontSize="12" TextAlignment="Left" VerticalContentAlignment="Top" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" />
             </Grid>
         </Grid>
         <!---->
 
-        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Padding="10" Margin="2.5">
             <Canvas x:Name="Canvas" />
         </Border>
     </Grid>
