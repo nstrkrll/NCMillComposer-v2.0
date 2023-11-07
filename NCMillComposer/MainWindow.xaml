@@ -7,9 +7,11 @@
         mc:Ignorable="d"
         Title="NC Mill Composer" 
         Icon="Resources\AppIcon\appicon.png"
-        WindowState="Maximized"
         SnapsToDevicePixels="True"
-        Loaded="OnLoad">
+        Loaded="OnLoad"
+        MinWidth="1250" 
+        MinHeight="800"
+        WindowState="Maximized">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -269,7 +271,7 @@
         <!---->
 
         <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Padding="10" Margin="2.5">
-            <Canvas x:Name="Canvas" />
+            <Canvas x:Name="Canvas" MinWidth="500" MinHeight="500" />
         </Border>
     </Grid>
 </Window>

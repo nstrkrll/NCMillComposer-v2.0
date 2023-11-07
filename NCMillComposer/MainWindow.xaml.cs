@@ -1,17 +1,12 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace NCMillComposer
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
@@ -22,9 +17,9 @@ namespace NCMillComposer
         // Получить в массив номера всех дочерних объектов и длину этого массива
         private void GetChildList(int objectNumber)
         {
-            AppSettings.ChildList = new int[2]; // Очищаем массив дочерних объектов
+            Array.Resize(ref AppSettings.ChildList, 2); // Очищаем массив дочерних объектов
             AppSettings.ChildListLen = 0; // Обнуляем количество дочерних объектов
-            if (objectNumber > 0 && AppSettings.ObjectType[objectNumber] != 'P') // Если не действительный объект
+            if (AppSettings.ObjectType[objectNumber] != 'P' && objectNumber > 0) // Если не действительный объект
             {
                 return;
             }
@@ -35,10 +30,10 @@ namespace NCMillComposer
             }
 
             var stringCursor = 1; // Указатель при переборе списка дочерних объектов
-            while (stringCursor < AppSettings.ObjChilds[objectNumber].Length) // В поисках номера Перебираем все символы, пока не дойдем до конца строки
+            while (stringCursor <= AppSettings.ObjChilds[objectNumber].Length) // В поисках номера Перебираем все символы, пока не дойдем до конца строки
             {
                 string tempStringLine = "";
-                while (stringCursor < AppSettings.ObjChilds[objectNumber].Length) // В поисках цифры Перебираем все символы, пока не дойдем до конца строки
+                while (stringCursor <= AppSettings.ObjChilds[objectNumber].Length) // В поисках цифры Перебираем все символы, пока не дойдем до конца строки
                 {
                     if (AppSettings.ObjChilds[objectNumber].Substring(stringCursor, 1) != " ") // Если считали символ-цифру
                     {
@@ -79,7 +74,7 @@ namespace NCMillComposer
             AppSettings.Point2Y = AppSettings.PolygonMaxY;
             AppSettings.MillX2 = AppSettings.PolygonMaxX;
             AppSettings.MillY2 = AppSettings.PolygonMaxY;
-            if (FindPoint()) // Ищем току 0 Поиск перекрестия среди объектов
+            if (FindPoint()) // Ищем точку 0 Поиск перекрестия среди объектов
             {
                 AppSettings.FoundP0 = true;
                 AppSettings.Point0X = AppSettings.PointX;
@@ -192,11 +187,11 @@ namespace NCMillComposer
                                 cY = AppSettings.PolygonY[AppSettings.ObjLast[objCur2]];
                             }
 
-                            if (((bX - aX) / (dY - cY)) > 0.9 && ((bX - aX) / (dY - cY)) < 1.1) // если их длины очень близки и...
+                            if (((bX - aX) / (dY - cY)) > 0.9f && ((bX - aX) / (dY - cY)) < 1.1f) // если их длины очень близки и...
                             {
-                                if ((((bX - aX) / 2 + aX) / cdX) > 0.9 && (((bX - aX) / 2 + aX) / cdX) < 1.1) // и горизонтальная  палка почти по центру горизонтальной
+                                if ((((bX - aX) / 2f + aX) / cdX) > 0.9f && (((bX - aX) / 2f + aX) / cdX) < 1.1f) // и горизонтальная  палка почти по центру горизонтальной
                                 {
-                                    if ((((dY - cY) / 2 + cY) / abY) > 0.9 && (((dY - cY) / 2 + cY) / abY) < 1.1) // и вертикальная палка тоже почти по центру вертикальной
+                                    if ((((dY - cY) / 2f + cY) / abY) > 0.9f && (((dY - cY) / 2f + cY) / abY) < 1.1f) // и вертикальная палка тоже почти по центру вертикальной
                                     {
                                         AppSettings.PointX = cdX; // CDx - координата по X
                                         AppSettings.PointY = abY; // ABy - координата по Y
@@ -235,14 +230,12 @@ namespace NCMillComposer
                 if (objCur != AppSettings.ObjNumCur && AppSettings.ObjectType[objCur] == 'P') // Если нашли закрытый объект
                 {
                     DebugTextBox.Text += ".";
-                    //DebugTextBox.Text += $"Найден ОБЪЕКТ1 №: {ObjNum[ObjCur]} \n";
                     AppSettings.ObjNumCur = objCur; // делаем его текущим для родительского
                     AppSettings.ObjNumCur2 = 0; // Обнуляем второй объект
                     for (var objCur2 = 1; objCur2 <= AppSettings.ObjLen; objCur2++) // Перебираем все объекты как вторые
                     {
-                        if (objCur2 != AppSettings.ObjNumCur2) // Если это не тот же объект что и родительский
+                        if (objCur2 != AppSettings.ObjNumCur) // Если это не тот же объект что и родительский
                         {
-                            // DebugTextBox.Text += $"Пробуем ОБЪЕКТ2 №: {ObjNum[ObjCur2]} ...";
                             if (ChildTest(objCur, objCur2))
                             {
                                 AppSettings.ObjChilds[objCur] = AppSettings.ObjChilds[objCur] + " " + objCur2; // Делаем запись в родительском объекте
@@ -251,10 +244,6 @@ namespace NCMillComposer
                                 {
                                     AppSettings.ObjRootMax = AppSettings.ObjRoot[objCur2]; // и обновляем максимальный уровень вложенности
                                 }
-                            }
-                            else
-                            {
-                                // DebugTextBox.Text += "не вложен \n";
                             }
                         }
                     }
@@ -307,11 +296,11 @@ namespace NCMillComposer
             for (var polyCur2 = AppSettings.ObjFirst[childObj]; polyCur2 <= AppSettings.ObjLast[childObj]; polyCur2++) // Перебираем все точки дочернего объекта
             {
                 var intersectValue = 0; // Обнуляем счетчик пересечений
-                for (var polyCur = AppSettings.ObjFirst[parentObj] + 1; polyCur <= AppSettings.ObjLast[parentObj]; polyCur++) // Перебираем все вектора родительского объекта, начиная со второй точки
+                for (AppSettings.PolyCur = AppSettings.ObjFirst[parentObj] + 1; AppSettings.PolyCur <= AppSettings.ObjLast[parentObj]; AppSettings.PolyCur++) // Перебираем все вектора родительского объекта, начиная со второй точки
                 {
                     // начало корректировки попадания луча на узел родительского объекта
-                    AppSettings.PolyXIntersect1 = AppSettings.PolygonX[polyCur - 1]; // заносим реальное значение точки Х №1 родительского вектора
-                    AppSettings.PolyXIntersect2 = AppSettings.PolygonX[polyCur]; // заносим реальное значение точки Х №2 родительского вектора
+                    AppSettings.PolyXIntersect1 = AppSettings.PolygonX[AppSettings.PolyCur - 1]; // заносим реальное значение точки Х №1 родительского вектора
+                    AppSettings.PolyXIntersect2 = AppSettings.PolygonX[AppSettings.PolyCur]; // заносим реальное значение точки Х №2 родительского вектора
                     // если выпущенный нами луч из точки дочернего объекта проходит сквозь узел родительского объекта, то ту точку родительского объекта смещаем на ничтожно малое значение
                     if (AppSettings.PolygonX[polyCur2] == AppSettings.PolyXIntersect1)
                     {
@@ -324,14 +313,40 @@ namespace NCMillComposer
                     }
 
                     // конец корректировки попадания луча на узел родительского объекта
-                    if (CalcvectorIntersect(AppSettings.PolygonX[polyCur2], AppSettings.PolygonY[polyCur2], AppSettings.PolygonX[polyCur2], AppSettings.PolygonMaxY + 10, AppSettings.PolyXIntersect1, AppSettings.PolygonY[polyCur], AppSettings.PolyXIntersect2, AppSettings.PolygonY[AppSettings.ObjFirst[parentObj]]))
+                    if (CalcVectorIntersect(AppSettings.PolygonX[polyCur2], AppSettings.PolygonY[polyCur2], AppSettings.PolygonX[polyCur2], AppSettings.PolygonMaxY + 10, AppSettings.PolyXIntersect1, AppSettings.PolygonY[AppSettings.PolyCur - 1], AppSettings.PolyXIntersect2, AppSettings.PolygonY[AppSettings.PolyCur]))
                     {
-                        intersectValue += 1;
+                        intersectValue += 1; // Суммируем количество пересечений с векторами родительского объекта
                     }
+                }
+
+                AppSettings.PolyCur--; // Возвращаемся на последнее значение
+                // начало корректировки попадания луча на узел родительского объекта
+                AppSettings.PolyXIntersect1 = AppSettings.PolygonX[AppSettings.PolyCur]; // заносим реальное значение точки Х №1 родительского вектора
+                AppSettings.PolyXIntersect2 = AppSettings.PolygonX[AppSettings.ObjFirst[parentObj]]; // заносим реальное значение точки Х №2 родительского вектора
+                // если выпущенный нами луч из точки дочернего объекта проходит сквозь узел родительского объекта, то ту точку родительского объекта смещаем на ничтожно малое значение
+                if (AppSettings.PolygonX[polyCur2] == AppSettings.PolyXIntersect1)
+                {
+                    AppSettings.PolyXIntersect1 += 0.001f;
+                }
+
+                if (AppSettings.PolygonX[polyCur2] == AppSettings.PolyXIntersect2)
+                {
+                    AppSettings.PolyXIntersect2 += 0.001f;
+                }
+
+                // конец корректировки попадания луча на узел родительского объекта
+                if (CalcVectorIntersect(AppSettings.PolygonX[polyCur2], AppSettings.PolygonY[polyCur2], AppSettings.PolygonX[polyCur2], AppSettings.PolygonMaxY + 10, AppSettings.PolyXIntersect1, AppSettings.PolygonY[AppSettings.PolyCur], AppSettings.PolyXIntersect2, AppSettings.PolygonY[AppSettings.ObjFirst[parentObj]]))
+                {
+                    intersectValue += 1; // Суммируем еще вектор между последней и первой точкой
+                }
+
+                if (intersectValue % 2 != 0) // Если значение нечетное
+                {
+                    childTestValue++; // то точка дочернего объекта находится внутри родительского
                 }
             }
 
-            if ((childTestValue / (AppSettings.ObjLast[childObj] - AppSettings.ObjFirst[childObj] + 1)) > 0.55f) // если количество входящих точек объекта деленное на кол-во векторов
+            if ((childTestValue / (AppSettings.ObjLast[childObj] - AppSettings.ObjFirst[childObj] + 1f)) > 0.55f) // если количество входящих точек объекта деленное на кол-во векторов
             {
                 return true;
             }
@@ -343,17 +358,6 @@ namespace NCMillComposer
         {
             // Вычисляет Ориентированную удвоенную площадь треугольника
             return (bX - aX) * (cY - aY) - (bY - aY) * (cX - aX);
-        }
-
-        private bool CalcvectorIntersect(float aX, float aY, float bX, float bY, float cX, float cY, float dX, float dY)
-        {
-            // Возвращает True если два вектора пересекаются
-            if (CalcVectorIntersect2(aX, bX, cX, dX) && CalcVectorIntersect2(aY, bY, cY, dY) && (CalcTriangleArea(aX, aY, bX, bY, cX, cY) * CalcTriangleArea(aX, aY, bX, bY, dX, dY) <= 0 && (CalcTriangleArea(cX, cY, dX, dY, aX, aY) * CalcTriangleArea(cX, cY, dX, dY, bX, bY) <= 0)))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private bool CalcVectorIntersect2(float aX, float bX, float cX, float dX)
@@ -380,6 +384,17 @@ namespace NCMillComposer
             }
 
             if (aX <= bX)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool CalcVectorIntersect(float aX, float aY, float bX, float bY, float cX, float cY, float dX, float dY)
+        {
+            // Возвращает True если два вектора пересекаются
+            if (CalcVectorIntersect2(aX, bX, cX, dX) && CalcVectorIntersect2(aY, bY, cY, dY) && (CalcTriangleArea(aX, aY, bX, bY, cX, cY) * CalcTriangleArea(aX, aY, bX, bY, dX, dY)) <= 0 && (CalcTriangleArea(cX, cY, dX, dY, aX, aY) * CalcTriangleArea(cX, cY, dX, dY, bX, bY)) <= 0)
             {
                 return true;
             }
@@ -442,7 +457,7 @@ namespace NCMillComposer
                     }
                     else if (AppSettings.ObjOrient[objCur] == 0 && OpenVectorsCombobox.SelectedIndex == 1) // Направление обьекта встречное, и в настройках тоже встречное
                     {
-                        AppSettings.ObjectColor[objCur] = 4; // Задаем зеленый цвет :)
+                        AppSettings.ObjectColor[objCur] = 2; // Задаем синий цвет :)
                     }
                     else
                     {
@@ -454,26 +469,24 @@ namespace NCMillComposer
 
         private void AlignAllObjorientation() // Делаем обход всех объектов попутным
         {
-            // return;
             DebugTextBox.Text += "Установка направления обхода всех объектов попутным... ";
-            var polyXTmp = new float[AppSettings.PolyLen]; // Координата X - временный массив
-            var polyYTmp = new float[AppSettings.PolyLen]; // Координата Y - временный массив
+            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
+            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
             var changeCount = 0;
             for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
             {
                 if (AppSettings.ObjOrient[objCur] == -1) // Обход против часовой стрелки - встречный для фрезы
                 {
-                    for (var polyCur = AppSettings.ObjFirst[objCur]; polyCur <= AppSettings.ObjLast[objCur]; polyCur++) // Проходим по всем значениям массива
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
                     {
-                        // DebugTextBox.Text += $"Новая ячейка: {PolyCur} Старая ячейка: {ObjFirst[ObjCur] + ObjLast[ObjCur] - PolyCur} Начальная: {ObjFirst[ObjCur]} Конечная: {ObjLast[ObjCur]} \n";
-                        polyXTmp[polyCur] = AppSettings.PolygonX[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - polyCur]; // Заносим во временное значение, данные с противоположного конца массива
-                        polyYTmp[polyCur] = AppSettings.PolygonY[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - polyCur]; // Заносим во временное значение, данные с противоположного конца массива
+                        polyXTmp[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
+                        polyYTmp[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
                     }
 
-                    for (var polyCur = AppSettings.ObjFirst[objCur]; polyCur <= AppSettings.ObjLast[objCur]; polyCur++) // Проходим по всем значениям массива
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
                     {
-                        AppSettings.PolygonX[polyCur] = polyXTmp[polyCur]; // Заносим в текущее значение, данные с временного массива
-                        AppSettings.PolygonY[polyCur] = polyYTmp[polyCur]; // Заносим в текущее значение, данные с временного массива
+                        AppSettings.PolygonX[AppSettings.PolyCur] = polyXTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
+                        AppSettings.PolygonY[AppSettings.PolyCur] = polyYTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
                     }
 
                     AppSettings.ObjOrient[objCur] = 1; // Устанавливаем для текущего объекта обход по часовой стрелке - попутный для фрезы
@@ -492,12 +505,13 @@ namespace NCMillComposer
             var backwardCount = 0;
             for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
             {
+                objOrientSumm = 0f; // Обнуляем сумму ориентированных площадей треугольника текущего объекта
                 for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur] + 1; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // перебираем все строки объекта, начиная со второй
                 {
                     objOrientSumm += CalcTriangleArea(0, 0, AppSettings.PolygonX[AppSettings.PolyCur - 1], AppSettings.PolygonY[AppSettings.PolyCur - 1], AppSettings.PolygonX[AppSettings.PolyCur], AppSettings.PolygonY[AppSettings.PolyCur]);
                 }
 
-                AppSettings.PolyCur--;
+                AppSettings.PolyCur--; // Возвращаемся на последнее значение
                 if (AppSettings.ObjectType[objCur] == 'P')
                 {
                     objOrientSumm += CalcTriangleArea(0, 0, AppSettings.PolygonX[AppSettings.PolyCur], AppSettings.PolygonY[AppSettings.PolyCur], AppSettings.PolygonX[AppSettings.ObjFirst[objCur]], AppSettings.PolygonY[AppSettings.ObjFirst[objCur]]);
@@ -518,7 +532,7 @@ namespace NCMillComposer
             DebugTextBox.Text += $"Найдено объектов попутных : {forwardCount} и встречных: {backwardCount} \n";
         }
 
-        private void FindObjCenerPoint() // Ищем среднюю точку для всех объектов и их размер
+        private void FindObjCenterPoint() // Ищем среднюю точку для всех объектов и их размер
         {
             DebugTextBox.Text += "Вычисление средней точки всех объектов... \n";
             var objXLeftPoint = 0f; // Самая Левая точка X объекта
@@ -542,17 +556,17 @@ namespace NCMillComposer
 
                     if (AppSettings.PolygonY[AppSettings.PolyCur] < objYBottomPoint)
                     {
-                        objYBottomPoint = AppSettings.PolygonX[AppSettings.PolyCur]; // Нашли более нижнюю точку Y
+                        objYBottomPoint = AppSettings.PolygonY[AppSettings.PolyCur]; // Нашли более нижнюю точку Y
                     }
 
-                    if (AppSettings.PolygonX[AppSettings.PolyCur] < objXRightPoint)
+                    if (AppSettings.PolygonX[AppSettings.PolyCur] > objXRightPoint)
                     {
                         objXRightPoint = AppSettings.PolygonX[AppSettings.PolyCur]; // Нашли более правую точку X
                     }
 
-                    if (AppSettings.PolygonY[AppSettings.PolyCur] < objYTopPoint)
+                    if (AppSettings.PolygonY[AppSettings.PolyCur] > objYTopPoint)
                     {
-                        objYTopPoint = AppSettings.PolygonX[AppSettings.PolyCur]; // Нашли более верхнюю точку Y
+                        objYTopPoint = AppSettings.PolygonY[AppSettings.PolyCur]; // Нашли более верхнюю точку Y
                     }
 
                     AppSettings.PolyXFirst += AppSettings.PolygonX[AppSettings.PolyCur]; // Сумма всех точек X
@@ -561,12 +575,10 @@ namespace NCMillComposer
 
                 AppSettings.ObjXCenter[objCur] = AppSettings.PolyXFirst / (AppSettings.ObjLast[objCur] - AppSettings.ObjFirst[objCur] + 1); // Среднеарифметическое по X
                 AppSettings.ObjYCenter[objCur] = AppSettings.PolyYFirst / (AppSettings.ObjLast[objCur] - AppSettings.ObjFirst[objCur] + 1); // Среднеарифметическое по Y
-                AppSettings.ObjXCenterBox[objCur] = (objXRightPoint - objXLeftPoint) / 2 + objXLeftPoint; // Средняя точка X по коробочке
-                AppSettings.ObjYCenterBox[objCur] = (objYTopPoint - objYBottomPoint) / 2 + objYBottomPoint; // Средняя точка Y по коробочке
+                AppSettings.ObjXCenterBox[objCur] = (objXRightPoint - objXLeftPoint) / 2f + objXLeftPoint; // Средняя точка X по коробочке
+                AppSettings.ObjYCenterBox[objCur] = (objYTopPoint - objYBottomPoint) / 2f + objYBottomPoint; // Средняя точка Y по коробочке
                 AppSettings.ObjXDimension[objCur] = objXRightPoint - objXLeftPoint; // размер объекта по X
                 AppSettings.ObjYDimension[objCur] = objYTopPoint - objYBottomPoint; // размер объекта по Y
-                // DebugTextBox.Text += $"ОБЪЕКТ: {ObjCur} XYFirst: {PolyX[ObjFirst[ObjCur]]} {PolyY[ObjFirst[ObjCur]]} XYCenter: {ObjXCenter[ObjCur]} {ObjYCenter[ObjCur]} \n";
-                // DebugTextBox.Text += $"ОБЪЕКТ: {ObjCur} XYBox: {ObjXCenterBox[ObjCur]} {ObjYCenterBox[ObjCur]} \n";
             }
         }
 
@@ -598,6 +610,111 @@ namespace NCMillComposer
                     {
                         AppSettings.ObjectType[objCur] = 'l';
                     }
+                }
+            }
+        }
+
+        private void DrawOnScreen() // Вывод на экран объектов по индексу
+        {
+            if (!AppSettings.IsFileLoaded)
+            {
+                return;
+            }
+
+            Canvas.Children.Clear();
+            var drawable = new Drawable(Canvas);
+            var color = new SolidColorBrush();
+            var strokeThickness = 1;
+            float drawXRatio = (Convert.ToSingle(Canvas.ActualWidth) - 1f) / AppSettings.PolygonMaxX;
+            float drawYRatio = (Convert.ToSingle(Canvas.ActualHeight) - 1f) / AppSettings.PolygonMaxY;
+            if (drawYRatio < drawXRatio)
+            {
+                drawXRatio = drawYRatio;
+            }
+            else
+            {
+                drawYRatio = drawXRatio;
+            }
+
+            float drawXShift = (Convert.ToSingle(Canvas.ActualWidth) - AppSettings.PolygonMaxX * drawXRatio) / 2f;
+            float drawYShift = (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.PolygonMaxY * drawYRatio) / 2f;
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
+            {
+                color = AppSettings.ObjectColor[objCur] switch // Решаем вопрос с цветом объекта
+                {
+                    1 => Brushes.Black, // Черный
+                    2 => Brushes.Blue, // Синий
+                    3 => Brushes.Red, // Красный
+                    4 => Brushes.Green, // Зеленый
+                    5 => Brushes.Purple, // Фиолетовый
+                    6 => Brushes.Orange, // Оранжевый
+                    7 => Brushes.DarkCyan, // Темно-голубой
+                    8 => Brushes.Brown, // Коричневый
+                    _ => Brushes.Black, // Черный для остальных случаев
+                };
+
+                for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur] + 1; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Перебираем весь массив данных объекта начиная со второй строки
+                {
+                    // и рисуем все линии у объектов L и P
+                    if (AppSettings.ObjectType[objCur] == 'L' || AppSettings.ObjectType[objCur] == 'P')
+                    {
+                        drawable.DrawLine(color, strokeThickness, drawXShift + AppSettings.PolygonX[AppSettings.PolyCur - 1] * drawXRatio, Convert.ToSingle(Canvas.ActualHeight) - AppSettings.PolygonY[AppSettings.PolyCur - 1] * drawYRatio - drawYShift - 1, drawXShift + AppSettings.PolygonX[AppSettings.PolyCur] * drawXRatio, Convert.ToSingle(Canvas.ActualHeight) - AppSettings.PolygonY[AppSettings.PolyCur] * drawYRatio - drawYShift - 1);
+                    }
+                }
+
+                AppSettings.PolyCur--; // Возвращаемся к последнему значению, т.к. Next вывел его за край
+                if (AppSettings.ObjectType[objCur] == 'P') // Если объект замкнутый
+                {
+                    // то дорисовываем еще одну линию - от конца к началу
+                    drawable.DrawLine(color, strokeThickness, drawXShift + AppSettings.PolygonX[AppSettings.PolyCur] * drawXRatio, Convert.ToSingle(Canvas.ActualHeight) - AppSettings.PolygonY[AppSettings.PolyCur] * drawYRatio - drawYShift - 1, drawXShift + AppSettings.PolygonX[AppSettings.ObjFirst[objCur]] * drawXRatio, Convert.ToSingle(Canvas.ActualHeight) - AppSettings.PolygonY[AppSettings.ObjFirst[objCur]] * drawYRatio - drawYShift - 1);
+                    // и серый крестик в центре него
+                    AppSettings.PolyXFirst = 2f; // Размер перекрестия в центрах закрытых объектов
+                    color = Brushes.Gray;
+                    drawable.DrawLine(color, strokeThickness, (drawXShift + AppSettings.ObjXCenter[objCur] * drawXRatio) - AppSettings.PolyXFirst, (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.ObjYCenter[objCur] * drawYRatio - drawYShift - 1), (drawXShift + AppSettings.ObjXCenter[objCur] * drawXRatio) + AppSettings.PolyXFirst, (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.ObjYCenter[objCur] * drawYRatio - drawYShift - 1));
+                    drawable.DrawLine(color, strokeThickness, (drawXShift + AppSettings.ObjXCenter[objCur] * drawXRatio), (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.ObjYCenter[objCur] * drawYRatio - drawYShift - 1) + AppSettings.PolyXFirst, (drawXShift + AppSettings.ObjXCenter[objCur] * drawXRatio), (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.ObjYCenter[objCur] * drawYRatio - drawYShift - 1) - AppSettings.PolyXFirst);
+                }
+
+                if (AppSettings.ObjectType[objCur] == 'L') // Если объект Незамкнутый
+                {
+                    AppSettings.PolyXFirst = 2f; // Размер перекрестия в центрах закрытых объектов
+                    color = Brushes.Gray;
+                }
+            }
+
+            if (AppSettings.FoundP0) // Если найдена нулевая точка
+            {
+                AppSettings.PolyXFirst = 14; // Размер перекрестия
+                color = Brushes.Gray;
+                drawable.DrawLine(color, strokeThickness, (drawXShift + AppSettings.Point0X * drawXRatio) - AppSettings.PolyXFirst, (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.Point0Y * drawYRatio - drawYShift - 1), (drawXShift + AppSettings.Point0X * drawXRatio) + AppSettings.PolyXFirst, (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.Point0Y * drawYRatio - drawYShift - 1));
+                drawable.DrawLine(color, strokeThickness, (drawXShift + AppSettings.Point0X * drawXRatio), (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.Point0Y * drawYRatio - drawYShift - 1) + AppSettings.PolyXFirst, (drawXShift + AppSettings.Point0X * drawXRatio), (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.Point0Y * drawYRatio - drawYShift - 1) - AppSettings.PolyXFirst);
+                // и точку в центре его
+                drawable.DrawEllipse(color, strokeThickness, drawXShift + AppSettings.Point0X * drawXRatio - 6, Convert.ToSingle(Canvas.ActualHeight) - AppSettings.Point0Y * drawYRatio - drawYShift - 1 - 6, 12, 12);
+                // пишем номер объекта рядом с центром объекта
+                AppSettings.PolyTmpLine = "0";
+                color = Brushes.Red;
+                drawable.DrawText(AppSettings.PolyTmpLine, 6, "Sans-Serif", color, (drawXShift + AppSettings.Point0X * drawXRatio) - 12, (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.Point0Y * drawYRatio - drawYShift - 1) - 10);
+            }
+
+            if (AppSettings.FoundP1) // Если найдена первая точка
+            {
+                AppSettings.PolyXFirst = 14; // Размер перекрестия
+                color = Brushes.Gray;
+                drawable.DrawLine(color, strokeThickness, (drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio) - AppSettings.PolyXFirst, (Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1), (drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio) + AppSettings.PolyXFirst, (Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1));
+                drawable.DrawLine(color, strokeThickness, (drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio), (Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) + AppSettings.PolyXFirst, (drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio), (Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) - AppSettings.PolyXFirst);
+                // и точку в центре его
+                drawable.DrawEllipse(color, strokeThickness, drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio - 6, Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1 - 6, 12, 12);
+                // у первой напишем индекс
+                AppSettings.PolyTmpLine = "1";
+                drawable.DrawText(AppSettings.PolyTmpLine, 6, "Sans-Serif", color, (drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio) - 12, (Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) - 10);
+                if (AppSettings.FoundP2) // Если найдена вторая точка
+                {
+                    // нарисуем вторую точку
+                    drawable.DrawLine(color, strokeThickness, (drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio) - AppSettings.PolyXFirst, (Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1), (drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio) + AppSettings.PolyXFirst, (Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1));
+                    drawable.DrawLine(color, strokeThickness, (drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio), (Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) + AppSettings.PolyXFirst, (drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio), (Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) - AppSettings.PolyXFirst);
+                    // и точку в центре его
+                    drawable.DrawEllipse(color, strokeThickness, drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio - 6, Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1 - 6, 12, 12);
+                    AppSettings.PolyTmpLine = "2";
+                    drawable.DrawText(AppSettings.PolyTmpLine, 6, "Sans-Serif", color, (drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio) - 12, (Convert.ToSingle(Canvas.ActualHeight) - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) - 10);
                 }
             }
         }
@@ -761,22 +878,22 @@ namespace NCMillComposer
                     AppSettings.IsFileLoaded = false;
                     FileSaveAndCloseButton.IsEnabled = false;
                     RotateButton.IsEnabled = false;
-                    Array.Resize(ref AppSettings.PolygonX, AppSettings.PolyLen + 1); // Массив Данных координат X объектов
-                    Array.Resize(ref AppSettings.PolygonY, AppSettings.PolyLen + 1); // Массив Данных координат Y объектов
-                    Array.Resize(ref AppSettings.ObjectType, AppSettings.ObjLen + 1); // Тип объекта D, L, P, +, X, l, p
-                    Array.Resize(ref AppSettings.ObjFirst, AppSettings.ObjLen + 1); // Номер первой строки объекта
-                    Array.Resize(ref AppSettings.ObjLast, AppSettings.ObjLen + 1); // Номер последней строки объекта
-                    Array.Resize(ref AppSettings.ObjectColor, AppSettings.ObjLen + 1); // Цвет объекта
-                    Array.Resize(ref AppSettings.ObjXCenter, AppSettings.ObjLen + 1); // Координаты средней точки Х
-                    Array.Resize(ref AppSettings.ObjYCenter, AppSettings.ObjLen + 1); // Координаты средней точки Y
-                    Array.Resize(ref AppSettings.ObjXCenterBox, AppSettings.ObjLen + 1); // Координаты средней точки Х по коробочке
-                    Array.Resize(ref AppSettings.ObjYCenterBox, AppSettings.ObjLen + 1); // Координаты средней точки Y по коробочке
-                    Array.Resize(ref AppSettings.ObjXDimension, AppSettings.ObjLen + 1); // Размер объекта по X
-                    Array.Resize(ref AppSettings.ObjYDimension, AppSettings.ObjLen + 1); // Размер объекта по Y
-                    Array.Resize(ref AppSettings.ObjOrient, AppSettings.ObjLen + 1); // Направление обхода объекта
-                    Array.Resize(ref AppSettings.ObjChilds, AppSettings.ObjLen + 1); // Список номеров дочерних объектов
-                    Array.Resize(ref AppSettings.ObjRoot, AppSettings.ObjLen + 1); // Уровень вложенности объекта, 0 - объект наружный
-                    Array.Resize(ref AppSettings.ObjParent, AppSettings.ObjLen + 1); // Родительский объект
+                    Array.Resize(ref AppSettings.PolygonX, 2); // Массив Данных координат X объектов
+                    Array.Resize(ref AppSettings.PolygonY, 2); // Массив Данных координат Y объектов
+                    Array.Resize(ref AppSettings.ObjectType, 2); // Тип объекта D, L, P, +, X, l, p
+                    Array.Resize(ref AppSettings.ObjFirst, 2); // Номер первой строки объекта
+                    Array.Resize(ref AppSettings.ObjLast, 2); // Номер последней строки объекта
+                    Array.Resize(ref AppSettings.ObjectColor, 2); // Цвет объекта
+                    Array.Resize(ref AppSettings.ObjXCenter, 2); // Координаты средней точки Х
+                    Array.Resize(ref AppSettings.ObjYCenter, 2); // Координаты средней точки Y
+                    Array.Resize(ref AppSettings.ObjXCenterBox, 2); // Координаты средней точки Х по коробочке
+                    Array.Resize(ref AppSettings.ObjYCenterBox, 2); // Координаты средней точки Y по коробочке
+                    Array.Resize(ref AppSettings.ObjXDimension, 2); // Размер объекта по X
+                    Array.Resize(ref AppSettings.ObjYDimension, 2); // Размер объекта по Y
+                    Array.Resize(ref AppSettings.ObjOrient, 2); // Направление обхода объекта
+                    Array.Resize(ref AppSettings.ObjChilds, 2); // Список номеров дочерних объектов
+                    Array.Resize(ref AppSettings.ObjRoot, 2); // Уровень вложенности объекта, 0 - объект наружный
+                    Array.Resize(ref AppSettings.ObjParent, 2); // Родительский объект
                     AppSettings.FoundP0 = false;
                     AppSettings.FoundP1 = false;
                     AppSettings.PolyLen = 0; // Длина массива объектов
@@ -816,7 +933,7 @@ namespace NCMillComposer
             AlignAllObjorientation(); // Делаем обход всех объектов попутным
             FindAllPoints(); // Поиск среди объектов точек 0 и 1
             AllObjChildTest(); // Поиск всех дочерних объектов
-            FindObjCenerPoint(); // Ищем среднюю точку для всех объектов и их размер
+            FindObjCenterPoint(); // Ищем среднюю точку для всех объектов и их размер
             HiddenSmallObjects(AppSettings.HideSmall); // Скрываем все объекты меньше указанных
             ReverseInnerPolygons(); // Делаем внутренние вложенные нечетные полигоны встречными по отношению к основному движению
             GetObjColorAsOriented(); // Разукрашиваем объекты в соответствии с направлением
@@ -825,144 +942,8 @@ namespace NCMillComposer
             DrawOnScreen(); // Вывод на экран объектов по индексу
         }
 
-        private void DrawOnScreen()
-        {
-            if (AppSettings.IsFileLoaded)
-            {
-                return;
-            }
+        
 
-            var drawable = new Drawable(Canvas);
-            drawable.StrokeColor = Brushes.Green;
-            drawable.StrokeWidth = 1;
-            float drawXRatio = (Convert.ToSingle(Canvas.ActualWidth) - 1) / AppSettings.PolygonMaxX;
-            float drawYRatio = (Convert.ToSingle(Canvas.ActualHeight) - 1) / AppSettings.PolygonMaxY;
-            if (drawYRatio < drawXRatio)
-            {
-                drawXRatio = drawYRatio;
-            }
-            else
-            {
-                drawYRatio = drawXRatio;
-            }
-
-            float drawXShift = (Convert.ToSingle(Canvas.ActualWidth) - AppSettings.PolygonMaxX * drawXRatio) / 2;
-            float drawYShift = (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.PolygonMaxY * drawYRatio) / 2;
-            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
-            {
-                switch (AppSettings.ObjectColor[objCur]) // Решаем вопрос с цветом объекта
-                {
-                    case 1:
-                        drawable.StrokeColor = Brushes.Black;
-                        break;
-                    case 2:
-                        drawable.StrokeColor = Brushes.Blue;
-                        break;
-                    case 3:
-                        drawable.StrokeColor = Brushes.Red;
-                        break;
-                    case 4:
-                        drawable.StrokeColor = Brushes.Green;
-                        break;
-                    case 5:
-                        drawable.StrokeColor = Brushes.Purple;
-                        break;
-                    case 6:
-                        drawable.StrokeColor = Brushes.Orange;
-                        break;
-                    case 7:
-                        drawable.StrokeColor = Brushes.DarkCyan;
-                        break;
-                    case 8:
-                        drawable.StrokeColor = Brushes.Brown;
-                        break;
-                    default:
-                        drawable.StrokeColor = Brushes.Black;
-                        break;
-                }
-
-                for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur] + 1; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Перебираем весь массив данных объекта начиная со второй строки
-                {
-                    // и рисуем все линии у объектов L и P
-                    if (AppSettings.ObjectType[objCur] == 'L' || AppSettings.ObjectType[objCur] == 'P')
-                    {
-                        drawable.DrawLine(drawXShift + AppSettings.PolygonX[AppSettings.PolyCur - 1] * drawXRatio, Convert.ToSingle(Canvas.ActualHeight) - AppSettings.PolygonY[AppSettings.PolyCur - 1] * drawYRatio - drawYShift - 1, drawXShift + AppSettings.PolygonX[AppSettings.PolyCur] * drawXRatio, Convert.ToSingle(Canvas.ActualHeight) - AppSettings.PolygonY[AppSettings.PolyCur] * drawYRatio - drawYShift - 1);
-                    }
-                }
-
-                AppSettings.PolyCur--; // Возвращаемся к последнему значению, т.к. Next вывел его за край
-                if (AppSettings.ObjectType[objCur] == 'P') // Если объект замкнутый
-                {
-                    // то дорисовываем еще одну линию - от конца к началу
-                    drawable.DrawLine(drawXShift + AppSettings.PolygonX[AppSettings.PolyCur] * drawXRatio, Convert.ToSingle(Canvas.ActualHeight) - AppSettings.PolygonY[AppSettings.PolyCur] * drawYRatio - drawYShift - 1, drawXShift + AppSettings.PolygonX[AppSettings.ObjFirst[objCur]] * drawXRatio, Convert.ToSingle(Canvas.ActualHeight) - AppSettings.PolygonY[AppSettings.ObjFirst[objCur]] * drawYRatio - drawYShift - 1);
-                    // и серый крестик в центре его
-                    AppSettings.PolyXFirst = 2; // Размер перекрестия в центрах закрытых объектов
-                    drawable.StrokeColor = Brushes.Gray;
-                    drawable.DrawLine((drawXShift + AppSettings.ObjXCenter[objCur] * drawXRatio) - AppSettings.PolyXFirst, (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.ObjYCenter[objCur] * drawYRatio - drawYShift - 1), (drawXShift + AppSettings.ObjXCenter[objCur] * drawXRatio) + AppSettings.PolyXFirst, (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.ObjYCenter[objCur] * drawYRatio - drawYShift - 1));
-                    drawable.DrawLine((drawXShift + AppSettings.ObjXCenter[objCur] * drawXRatio), (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.ObjYCenter[objCur] * drawYRatio - drawYShift - 1) + AppSettings.PolyXFirst, (drawXShift + AppSettings.ObjXCenter[objCur] * drawXRatio), (Convert.ToSingle(Canvas.ActualHeight) - AppSettings.ObjYCenter[objCur] * drawYRatio - drawYShift - 1) - AppSettings.PolyXFirst);
-                }
-
-                if (AppSettings.ObjectType[objCur] == 'L') // Если объект Незамкнутый
-                {
-                    AppSettings.PolyXFirst = 2; // Размер перекрестия в центрах закрытых объектов
-                    drawable.StrokeColor = Brushes.Gray;
-                }
-            }
-
-            if (AppSettings.FoundP0) // Если найдена нулевая точка
-            {
-                AppSettings.PolyXFirst = 14; // Размер перекрестия
-                canvas.StrokeColor = Colors.Gray;
-                canvas.DrawLine((drawXShift + AppSettings.Point0X * drawXRatio) - AppSettings.PolyXFirst, (dirtyRect.Height - AppSettings.Point0Y * drawYRatio - drawYShift - 1), (drawXShift + AppSettings.Point0X * drawXRatio) + AppSettings.PolyXFirst, (dirtyRect.Height - AppSettings.Point0Y * drawYRatio - drawYShift - 1));
-                canvas.DrawLine((drawXShift + AppSettings.Point0X * drawXRatio), (dirtyRect.Height - AppSettings.Point0Y * drawYRatio - drawYShift - 1) + AppSettings.PolyXFirst, (drawXShift + AppSettings.Point0X * drawXRatio), (dirtyRect.Height - AppSettings.Point0Y * drawYRatio - drawYShift - 1) - AppSettings.PolyXFirst);
-                // и точку в центре его
-                canvas.DrawEllipse(drawXShift + AppSettings.Point0X * drawXRatio - 6, dirtyRect.Height - AppSettings.Point0Y * drawYRatio - drawYShift - 1 - 6, 12, 12);
-                // пишем номер объекта рядом с центром объекта
-                AppSettings.PolyTmpLine = "0";
-                canvas.FontColor = Colors.Gray;
-                canvas.FontSize = 6;
-                canvas.Font = new Font("Sans-Serif");
-                canvas.DrawString(AppSettings.PolyTmpLine, (drawXShift + AppSettings.Point0X * drawXRatio) - 12, (dirtyRect.Height - AppSettings.Point0Y * drawYRatio - drawYShift - 1) - 10, HorizontalAlignment.Left);
-            }
-
-            if (AppSettings.FoundP1) // Если найдена первая точка
-            {
-                AppSettings.PolyXFirst = 14; // Размер перекрестия
-                canvas.StrokeColor = Colors.Gray;
-                canvas.DrawLine((drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio) - AppSettings.PolyXFirst, (dirtyRect.Height - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1), (drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio) + AppSettings.PolyXFirst, (dirtyRect.Height - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1));
-                canvas.DrawLine((drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio), (dirtyRect.Height - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) + AppSettings.PolyXFirst, (drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio), (dirtyRect.Height - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) - AppSettings.PolyXFirst);
-                // и точку в центре его
-                canvas.DrawEllipse(drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio - 6, dirtyRect.Height - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1 - 6, 12, 12);
-                // у первой напишем индекс
-                AppSettings.PolyTmpLine = "1";
-                canvas.FontColor = Colors.Gray;
-                canvas.FontSize = 6;
-                canvas.Font = new Font("Sans-Serif");
-                canvas.DrawString(AppSettings.PolyTmpLine, (drawXShift + (AppSettings.MillX1 + AppSettings.Point0X) * drawXRatio) - 12, (dirtyRect.Height - (AppSettings.MillY1 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) - 10, HorizontalAlignment.Left);
-                if (AppSettings.FoundP2) // Если найдена вторая точка
-                {
-                    // нарисуем вторую точку
-                    canvas.DrawLine((drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio) - AppSettings.PolyXFirst, (dirtyRect.Height - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1), (drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio) + AppSettings.PolyXFirst, (dirtyRect.Height - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1));
-                    canvas.DrawLine((drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio), (dirtyRect.Height - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) + AppSettings.PolyXFirst, (drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio), (dirtyRect.Height - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) - AppSettings.PolyXFirst);
-                    // и точку в центре его
-                    canvas.DrawEllipse(drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio - 6, dirtyRect.Height - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1 - 6, 12, 12);
-                    AppSettings.PolyTmpLine = "2";
-                    canvas.DrawString(AppSettings.PolyTmpLine, (drawXShift + (AppSettings.MillX2 + AppSettings.Point0X) * drawXRatio) - 12, (dirtyRect.Height - (AppSettings.MillY2 + AppSettings.Point0Y) * drawYRatio - drawYShift - 1) - 10, HorizontalAlignment.Left);
-                }
-            }
-        }
-
-        private void DrawLine()
-        {
-            var line = new Line();
-            line.Stroke = Brushes.Red;
-            line.X1 = 0;
-            line.Y1 = 0;
-            line.X2 = 100;
-            line.Y2 = 100;
-            line.StrokeThickness = 5;
-            Canvas.Children.Add(line);
-        }
         private void FormatArrayLP() // Поиск открытых и закрытых объектов
         {
             DebugTextBox.Text += "Поиск и маркировка закрытых объектов и открытых векторов ... ";
@@ -1830,8 +1811,8 @@ namespace NCMillComposer
 
         private void ReverseLines() // Меняем у всех открытых Объектов направление движения на противоположное
         {
-            var polyXTmp = new float[AppSettings.PolyLen]; // Координата X - временный массив
-            var polyYTmp = new float[AppSettings.PolyLen]; // Координата Y - временный массив
+            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
+            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
             for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
             {
                 if (AppSettings.ObjectType[objCur] == 'L') // Если это закрытые объекты
@@ -1853,8 +1834,8 @@ namespace NCMillComposer
 
         private void ReversePolygons() // Меняем у всех закрытых полигонов направление движения на противоположное
         {
-            var polyXTmp = new float[AppSettings.PolyLen]; // Координата X - временный массив
-            var polyYTmp = new float[AppSettings.PolyLen]; // Координата Y - временный массив
+            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
+            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
             for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
             {
                 if (AppSettings.ObjectType[objCur] == 'P') // Если это закрытые объекты
@@ -1876,8 +1857,8 @@ namespace NCMillComposer
 
         private void ReverseObjects() // Меняем у всех действительных  объектов направление движения на противоположное
         {
-            var polyXTmp = new float[AppSettings.PolyLen]; // Координата X - временный массив
-            var polyYTmp = new float[AppSettings.PolyLen]; // Координата Y - временный массив
+            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
+            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
             for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
             {
                 if (AppSettings.ObjectType[objCur] == 'L' || AppSettings.ObjectType[objCur] == 'P') // Если это действительные валидные объекты
