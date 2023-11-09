@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace NCMillComposer
@@ -721,30 +722,30 @@ namespace NCMillComposer
 
         private void readFilePLT() // Открываем, считываем все вектора в массив и закрываем файл
         {
+            AppSettings.FoundP0 = false; // Не обнаружен + в файле для нулевой точки
+            AppSettings.FoundP1 = false; // Не обнаружен х в файле для точки1
+            AppSettings.PolyLen = 0; // Длина массива объектов
+            AppSettings.PolyTmpColor = 0; // Текущий цвет объекта
+            AppSettings.ObjLen = 0; // Количество объектов в массиве (Длина индекса объектов)
+            Array.Resize(ref AppSettings.PolygonX, 2); // Массив Данных координат X объектов
+            Array.Resize(ref AppSettings.PolygonY, 2); // Массив Данных координат Y объектов
+            Array.Resize(ref AppSettings.ObjectType, 2); // Тип объекта D, L, P, +, X, l, p
+            Array.Resize(ref AppSettings.ObjFirst, 2); // Номер первой строки объекта
+            Array.Resize(ref AppSettings.ObjLast, 2); // Номер последней строки объекта
+            Array.Resize(ref AppSettings.ObjectColor, 2); // Цвет объекта
+            Array.Resize(ref AppSettings.ObjXCenter, 2); // Координаты средней точки Х
+            Array.Resize(ref AppSettings.ObjYCenter, 2); // Координаты средней точки Y
+            Array.Resize(ref AppSettings.ObjXCenterBox, 2); // Координаты средней точки Х по коробочке
+            Array.Resize(ref AppSettings.ObjYCenterBox, 2); // Координаты средней точки Y по коробочке
+            Array.Resize(ref AppSettings.ObjXDimension, 2); // Размер объекта по X
+            Array.Resize(ref AppSettings.ObjYDimension, 2); // Размер объекта по Y
+            Array.Resize(ref AppSettings.ObjOrient, 2); // Направление обхода объекта
+            Array.Resize(ref AppSettings.ObjChilds, 2); // Список номеров дочерних объектов
+            Array.Resize(ref AppSettings.ObjRoot, 2); // Уровень вложенности объекта, 0 - объект наружный
+            Array.Resize(ref AppSettings.ObjParent, 2); // Родительский объект
+            var dontReadLine = false; // Запрет чтения строки из файла в случае перехода на другой объект
             using (var streamReader = new StreamReader(AppSettings.OpenDirectory + "\\" + AppSettings.FileName + AppSettings.FileDim)) // Открываем файл на построчное чтение
             {
-                AppSettings.FoundP0 = false; // Не обнаружен + в файле для нулевой точки
-                AppSettings.FoundP1 = false; // Не обнаружен х в файле для точки1
-                AppSettings.PolyLen = 0; // Длина массива объектов
-                AppSettings.PolyTmpColor = 0; // Текущий цвет объекта
-                AppSettings.ObjLen = 0; // Количество объектов в массиве (Длина индекса объектов)
-                Array.Resize(ref AppSettings.PolygonX, 2); // Массив Данных координат X объектов
-                Array.Resize(ref AppSettings.PolygonY, 2); // Массив Данных координат Y объектов
-                Array.Resize(ref AppSettings.ObjectType, 2); // Тип объекта D, L, P, +, X, l, p
-                Array.Resize(ref AppSettings.ObjFirst, 2); // Номер первой строки объекта
-                Array.Resize(ref AppSettings.ObjLast, 2); // Номер последней строки объекта
-                Array.Resize(ref AppSettings.ObjectColor, 2); // Цвет объекта
-                Array.Resize(ref AppSettings.ObjXCenter, 2); // Координаты средней точки Х
-                Array.Resize(ref AppSettings.ObjYCenter, 2); // Координаты средней точки Y
-                Array.Resize(ref AppSettings.ObjXCenterBox, 2); // Координаты средней точки Х по коробочке
-                Array.Resize(ref AppSettings.ObjYCenterBox, 2); // Координаты средней точки Y по коробочке
-                Array.Resize(ref AppSettings.ObjXDimension, 2); // Размер объекта по X
-                Array.Resize(ref AppSettings.ObjYDimension, 2); // Размер объекта по Y
-                Array.Resize(ref AppSettings.ObjOrient, 2); // Направление обхода объекта
-                Array.Resize(ref AppSettings.ObjChilds, 2); // Список номеров дочерних объектов
-                Array.Resize(ref AppSettings.ObjRoot, 2); // Уровень вложенности объекта, 0 - объект наружный
-                Array.Resize(ref AppSettings.ObjParent, 2); // Родительский объект
-                var dontReadLine = false; // Запрет чтения строки из файла в случае перехода на другой объект
                 while (!streamReader.EndOfStream)
                 {
                     if (!dontReadLine)
@@ -779,9 +780,9 @@ namespace NCMillComposer
                         Array.Resize(ref AppSettings.ObjParent, AppSettings.ObjLen + 1); // Родительский объект
                         AppSettings.ObjectColor[AppSettings.ObjLen] = Convert.ToInt32(AppSettings.PolyTmpColor); // Сохраняем цвет объекта в массив
                         AppSettings.ObjFirst[AppSettings.ObjLen] = AppSettings.PolyLen; // Сохраняем номер первой строки объекта
-                                                                                            // Получаем из считанной строки X координату
+                        // Получаем из считанной строки X координату
                         AppSettings.PolygonX[AppSettings.PolyLen] = Convert.ToSingle(TrimFormat09(AppSettings.PolyTmpLine.Substring(2, AppSettings.PolyTmpLine.IndexOf(" ") - 2))); // Сохраняем X координату в массив
-                                                                                                                                                                                        // Получаем из считанной строки Y координату
+                        // Получаем из считанной строки Y координату
                         AppSettings.PolygonY[AppSettings.PolyLen] = Convert.ToSingle(TrimFormat09(AppSettings.PolyTmpLine.Substring(AppSettings.PolyTmpLine.IndexOf(" "), AppSettings.PolyTmpLine.IndexOf(";") - AppSettings.PolyTmpLine.IndexOf(" ")))); // Сохраняем Y координату в массив
                         while (!streamReader.EndOfStream) // Начинаем обрабатывать все следующие за первой строки
                         {
@@ -797,58 +798,32 @@ namespace NCMillComposer
                                 AppSettings.PolyLen++; // Переходим к следующей строке данных массива точек
                                 Array.Resize(ref AppSettings.PolygonX, AppSettings.PolyLen + 1); // одна из координат по Х объекта
                                 Array.Resize(ref AppSettings.PolygonY, AppSettings.PolyLen + 1); // одна из координат по Y объекта
-                                                                                             // Получаем из считанной строки X координату
+                                // Получаем из считанной строки X координату
                                 AppSettings.PolygonX[AppSettings.PolyLen] = Convert.ToSingle(TrimFormat09(AppSettings.PolyTmpLine.Substring(2, AppSettings.PolyTmpLine.IndexOf(" ") - 2))); // Сохраняем X координату в массив
-                                                                                                                                                                                                // Получаем из считанной строки Y координату
+                                // Получаем из считанной строки Y координату
                                 AppSettings.PolygonY[AppSettings.PolyLen] = Convert.ToSingle(TrimFormat09(AppSettings.PolyTmpLine.Substring(AppSettings.PolyTmpLine.IndexOf(" "), AppSettings.PolyTmpLine.IndexOf(";") - AppSettings.PolyTmpLine.IndexOf(" ")))); // Сохраняем Y координату в массив
                             }
                         } // конец обработки тела файла, всвязи с окончанием файла
                     } // Конец обработки найденного первого прохода с поднятым пером
                 } // конец обработки файла, всвязи с его окончанием.
             }
-            
-            TextBox18.Text = "";
-        }
 
-        private string TrimFormat09(string frmStringVal)
-        {
-            var result = "";
-            frmStringVal = frmStringVal.Trim();
-            var tmpCur = "";
-            for (var tmpLineNumber = 0; tmpLineNumber < frmStringVal.Length; tmpLineNumber++)
-            {
-                tmpCur = frmStringVal.Substring(tmpLineNumber, 1);
-                if (tmpCur == "-" || tmpCur == "1" || tmpCur == "2" || tmpCur == "3" || tmpCur == "4" || tmpCur == "5" || tmpCur == "6" || tmpCur == "7" || tmpCur == "8" || tmpCur == "9" || tmpCur == "0" || tmpCur == "." || tmpCur == ",")
-                {
-                    result += tmpCur;
-                }
-            }
-
-            result = result.Replace('.', AppSettings.Separator);
-            result = result.Replace(',', AppSettings.Separator);
-            if (result == "" || result == "-" || result == "." || result == ",")
-            {
-                result = "0";
-            }
-
-            if (result.IndexOf(AppSettings.Separator) != -1)
-            {
-                result = result.Substring(0, result.IndexOf(AppSettings.Separator)) + result.Substring(result.IndexOf(AppSettings.Separator) + 1, 3);
-            }
-
-            return result;
+            FileNameFilterTextBox.Text = "";
         }
 
         private void FileOpenAndReadObjects() // Открываем и загружаем в массив файл
         {
             AppSettings.IsFileLoaded = false;
-            var fileDialog = new OpenFileDialog();
-            fileDialog.Filter = AppSettings.FileMask;
-            fileDialog.Title = AppSettings.OpenDialogTitle;
-            fileDialog.InitialDirectory = AppSettings.OpenDirectory;
-            if (TextBox18.Text != "")
+            var fileDialog = new OpenFileDialog
             {
-                fileDialog.FileName = $"*{TextBox18.Text}*";
+                Filter = AppSettings.FileMask,
+                Title = AppSettings.OpenDialogTitle,
+                InitialDirectory = AppSettings.OpenDirectory
+            };
+
+            if (FileNameFilterTextBox.Text != "")
+            {
+                fileDialog.FileName = $"*{FileNameFilterTextBox.Text}*";
             }
 
             if (fileDialog.ShowDialog() == true) // Если выбрали файл
@@ -869,7 +844,7 @@ namespace NCMillComposer
                     FileSaveAndCloseButton.IsEnabled = true; // и соответсвенно включим, если указана высота безопасности
                 }
 
-                DebugTextBox.Text += $"\n\n Открывается файл: {AppSettings.OpenDirectory}\\{AppSettings.FileName}{AppSettings.FileDim}\n";
+                DebugTextBox.Text += $"\n\nОткрывается файл: {AppSettings.OpenDirectory}\\{AppSettings.FileName}{AppSettings.FileDim}\n";
                 readFilePLT(); // Открываем, считываем все вектора в массив и закрываем файл
                 if (AppSettings.PolyLen < 2) // Если в файле не содержалось объектов
                 {
@@ -905,9 +880,19 @@ namespace NCMillComposer
             }
         }
 
-        private void FileOpen_ButtonClick(object sender, RoutedEventArgs e)
+        private void FileOpenButton_ClickAction(object sender, RoutedEventArgs e)
         {
             OpenFile();
+        }
+
+        private void FileNameFilterTextBox_KeyDownAction(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                FileOpenButton.Focus();
+                OpenFile();
+            }
         }
 
         private void OpenFile()
@@ -918,7 +903,7 @@ namespace NCMillComposer
                 return;
             }
 
-            App.Current.MainWindow.Title = $"{AppSettings.ProgName} {AppSettings.Version}";
+            App.Current.MainWindow.Title = $"{AppSettings.ProgName} - {AppSettings.FileName}{AppSettings.FileDim}";
             FormatArrayLP(); // Поиск открытых и закрытых объектов
             AppSettings.ConnectCount = 1; // Устанавливаем счетчик соединений, чтобы запустить первый проход
             while (AppSettings.ConnectCount != 0)
@@ -940,39 +925,6 @@ namespace NCMillComposer
             DebugTextBox.Text += "Вывод на экран...";
             Statistic(); // Рассчет суммы длин всех векторов
             DrawOnScreen(); // Вывод на экран объектов по индексу
-        }
-
-        
-
-        private void FormatArrayLP() // Поиск открытых и закрытых объектов
-        {
-            DebugTextBox.Text += "Поиск и маркировка закрытых объектов и открытых векторов ... ";
-            // поиск закрытых объектов внутри массива и их маркировка с удалением последней координаты
-            var closedObjects = 0; // временный счетчик закрытых объектов
-            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
-            {
-                if (AppSettings.ObjectType[objCur] != 'P' && AppSettings.ObjectType[objCur] != 'D') // Работаем только с действительными объектами и незакрытыми объектами
-                {
-                    if (AppSettings.PolygonX[AppSettings.ObjFirst[objCur]] == AppSettings.PolygonX[AppSettings.ObjLast[objCur]] && AppSettings.PolygonY[AppSettings.ObjFirst[objCur]] == AppSettings.PolygonY[AppSettings.ObjLast[objCur]]) // Если первая и последняя кординаты объекта равны
-                    {
-                        AppSettings.ObjectType[objCur] = 'P'; // Он отмечается как закрытый
-                        AppSettings.PolygonX[AppSettings.ObjLast[objCur]] = 0; // Cтирается из массива данных координата X
-                        AppSettings.PolygonY[AppSettings.ObjLast[objCur]] = 0; // Cтирается из массива данных координата Y
-                        AppSettings.ObjLast[objCur] = AppSettings.ObjLast[objCur] - 1; // и переносится указатель последней строки объекта на одну строку к началу
-                    }
-                    else
-                    {
-                        AppSettings.ObjectType[objCur] = 'L'; // Он отмечается как открытый
-                    }
-                }
-
-                if (AppSettings.ObjectType[objCur] == 'P')
-                {
-                    closedObjects++;
-                }
-            }
-
-            DebugTextBox.Text += $"Определено Закрытых: {closedObjects} Открытых: {AppSettings.ObjLen - closedObjects} \n";
         }
 
         private void FormatArrayConnect() // Находим и соединяем вектора разных объектов в один
@@ -1059,59 +1011,105 @@ namespace NCMillComposer
                 } // Конец поиска незакрытого объекта1
             } // Переход к следующей строке массива для поиска следующего объекта1
 
-            DebugTextBox.Text += $"\n Произведено всего стыковок: После вектора: {usl1} После с переворотом: {usl2} Впереди вектора: {usl3} Впереди с переворотом: {usl3}";
+            DebugTextBox.Text += $"\nПроизведено всего стыковок: После вектора: {usl1} После с переворотом: {usl2} Впереди вектора: {usl3} Впереди с переворотом: {usl3}";
             DebugTextBox.Text += $" Обработано Строк: {AppSettings.PolyLen} Объектов: {AppSettings.ObjLen} \n";
             AppSettings.ConnectCount = usl1 + usl2 + usl3 + usl4;
         }
 
-        private void FormatArrayAddAfter(int objBegin, int polyRecords) // Раздвигаем массив после
+        private void FormatArrayPercent() // Приведение координат всех объектов к нулю в нижнем левом углу И применение автомасштаба
         {
-            AppSettings.PolyLen += polyRecords; // Новая длина массива координат
-            Array.Resize(ref AppSettings.PolygonX, AppSettings.PolyLen + 1); // Расширяем массив
-            Array.Resize(ref AppSettings.PolygonY, AppSettings.PolyLen + 1); // Расширяем массив
-            for (var polyCur = AppSettings.PolyLen - polyRecords; polyCur >= AppSettings.ObjLast[objBegin] + 1; polyCur--)
+            if (AppSettings.AutoSizePercent == 1)
             {
-                AppSettings.PolygonX[polyCur + polyRecords] = AppSettings.PolygonX[polyCur];
-                AppSettings.PolygonY[polyCur + polyRecords] = AppSettings.PolygonY[polyCur];
+                AppSettings.PluPercentAuto = 1000;
+            }
+            else
+            {
+                AppSettings.PluPercentAuto = AppSettings.PluPercent;
             }
 
-            for (var polyCur = AppSettings.ObjLast[objBegin] + 1; polyCur <= AppSettings.ObjLast[objBegin] + polyRecords; polyCur++)
+            FormatArrayToZero();
+            while (AppSettings.PolygonMaxX > AppSettings.MaxTableSizeX && AppSettings.AutoSizePercent == 1)
             {
-                AppSettings.PolygonX[polyCur] = 0;
-                AppSettings.PolygonY[polyCur] = 0;
+                AppSettings.PluPercentAuto /= 10;
+                readFilePLT(); // Открываем, считываем все вектора в массив и закрываем файл
+                FormatArrayLP(); // Поиск открытых и закрытых объектов
+                AppSettings.ConnectCount = 1; // Устанавливаем счетчик соединений, чтобы запустить первый проход
+                while (AppSettings.ConnectCount != 0)
+                {
+                    FormatArrayConnect(); // Находим и соединяем вектора разных объектов в один
+                    FormatArrayLP(); // Поиск открытых и закрытых объектов
+                    FormatArrayDefrag(); // Дефрагментация и упорядочивание массива объектов
+                }
+
+                FormatArrayToZero();
             }
 
-            AppSettings.ObjLast[objBegin] = AppSettings.ObjLast[objBegin] + polyRecords;
-            for (var objCur = objBegin + 1; objCur <= AppSettings.ObjLen; objCur++)
+            if (AppSettings.AutoSizePercent == 1)
             {
-                AppSettings.ObjFirst[objCur] = AppSettings.ObjFirst[objCur] + polyRecords;
-                AppSettings.ObjLast[objCur] = AppSettings.ObjLast[objCur] + polyRecords;
+                AppSettings.PluPercent = AppSettings.PluPercentAuto;
+                SaveIniString("PluPercent", AppSettings.PluPercent.ToString());
+                ScaleTextBox.Text = AppSettings.PluPercent + "%";
             }
         }
 
-        private void FormatArrayAddBefore(int objBegin, int polyRecords) // Раздвигаем массив перед
+        private void FormatArrayToZero() // Приведение координат всех объектов к нулю в нижнем левом углу
         {
-            AppSettings.PolyLen += polyRecords; // Новая длина массива координат
-            Array.Resize(ref AppSettings.PolygonX, AppSettings.PolyLen + 1); // Расширяем массив
-            Array.Resize(ref AppSettings.PolygonY, AppSettings.PolyLen + 1); // Расширяем массив
-            for (var polyCur = AppSettings.PolyLen - polyRecords; polyCur >= AppSettings.ObjFirst[objBegin]; polyCur--)
+            DebugTextBox.Text += "Приведение координат объектов к нижнему левому углу... ";
+            // Переведем сначала все длины в реальные миллиметры с учетом обратной пропорции масштаба при импорте
+            for (AppSettings.PolyCur = 1; AppSettings.PolyCur <= AppSettings.PolyLen; AppSettings.PolyCur++)
             {
-                AppSettings.PolygonX[polyCur + polyRecords] = AppSettings.PolygonX[polyCur];
-                AppSettings.PolygonY[polyCur + polyRecords] = AppSettings.PolygonY[polyCur];
+                AppSettings.PolygonX[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.PolyCur] / AppSettings.PluInch * 25.4f * (AppSettings.PluPercentAuto / 100f);
+                AppSettings.PolygonY[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.PolyCur] / AppSettings.PluInch * 25.4f * (AppSettings.PluPercentAuto / 100f);
             }
 
-            for (var polyCur = AppSettings.ObjFirst[objBegin]; polyCur <= AppSettings.ObjFirst[objBegin] + polyRecords - 1; polyCur++)
+            float polyXMin = AppSettings.PolygonX[1]; // Будем считать первую координату минимальной
+            float polyYMin = AppSettings.PolygonY[1]; // Будем считать первую координату минимальной
+            AppSettings.PolygonMaxX = AppSettings.PolygonX[2]; // Будем считать первую координату максимальной
+            AppSettings.PolygonMaxY = AppSettings.PolygonY[2]; // Будем считать первую координату максимальной
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
             {
-                AppSettings.PolygonX[polyCur] = 0;
-                AppSettings.PolygonY[polyCur] = 0;
+                if (AppSettings.ObjectType[objCur] != 'D') // И только действительные из них
+                {
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Перебираем все действительные значения координат объекта
+                    {
+                        if (AppSettings.PolygonX[AppSettings.PolyCur] < polyXMin)
+                        {
+                            polyXMin = AppSettings.PolygonX[AppSettings.PolyCur];
+                        }
+
+                        if (AppSettings.PolygonY[AppSettings.PolyCur] < polyYMin)
+                        {
+                            polyYMin = AppSettings.PolygonY[AppSettings.PolyCur];
+                        }
+
+                        if (AppSettings.PolygonX[AppSettings.PolyCur] > AppSettings.PolygonMaxX)
+                        {
+                            AppSettings.PolygonMaxX = AppSettings.PolygonX[AppSettings.PolyCur];
+                        }
+
+                        if (AppSettings.PolygonY[AppSettings.PolyCur] > AppSettings.PolygonMaxY)
+                        {
+                            AppSettings.PolygonMaxY = AppSettings.PolygonY[AppSettings.PolyCur];
+                        }
+                    }
+                }
             }
 
-            AppSettings.ObjLast[objBegin] = AppSettings.ObjLast[objBegin] + polyRecords;
-            for (var objCur = objBegin + 1; objCur <= AppSettings.ObjLen; objCur++)
+            AppSettings.PolygonMaxX -= polyXMin; // Приводим к норме максимальное значение
+            AppSettings.PolygonMaxY -= polyYMin; // Приводим к норме максимальное значение
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем опять все объекты
             {
-                AppSettings.ObjFirst[objCur] = AppSettings.ObjFirst[objCur] + polyRecords;
-                AppSettings.ObjLast[objCur] = AppSettings.ObjLast[objCur] + polyRecords;
+                if (AppSettings.ObjectType[objCur] != 'D') // И только действительные из них
+                {
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Перебираем все действительные значения координат объекта
+                    {
+                        AppSettings.PolygonX[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.PolyCur] - polyXMin; // Вычитаем из текущего значения минимально возможное
+                        AppSettings.PolygonY[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.PolyCur] - polyYMin; // Вычитаем из текущего значения минимально возможное
+                    }
+                }
             }
+
+            DebugTextBox.Text += $"MaxX: {AppSettings.PolygonMaxX} MaxY: {AppSettings.PolygonMaxY} \n";
         }
 
         private void FormatArrayDefrag() // Дефрагментация и упорядочивание массива объектов
@@ -1230,101 +1228,525 @@ namespace NCMillComposer
             DebugTextBox.Text += $"В результате - Строк: {AppSettings.PolyLen} Объектов: {AppSettings.ObjLen} \n";
         }
 
-        private void FormatArrayPercent() // Приведение координат всех объектов к нулю в нижнем левом углу И применение автомасштаба
+        private void FormatArrayLP() // Поиск открытых и закрытых объектов
         {
-            if (AppSettings.AutoSizePercent == 1)
+            DebugTextBox.Text += "Поиск и маркировка закрытых объектов и открытых векторов ... ";
+            // поиск закрытых объектов внутри массива и их маркировка с удалением последней координаты
+            var closedObjects = 0; // временный счетчик закрытых объектов
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
             {
-                AppSettings.PluPercentAuto = 1000;
+                if (AppSettings.ObjectType[objCur] != 'P' && AppSettings.ObjectType[objCur] != 'D') // Работаем только с действительными объектами и незакрытыми объектами
+                {
+                    if (AppSettings.PolygonX[AppSettings.ObjFirst[objCur]] == AppSettings.PolygonX[AppSettings.ObjLast[objCur]] && AppSettings.PolygonY[AppSettings.ObjFirst[objCur]] == AppSettings.PolygonY[AppSettings.ObjLast[objCur]]) // Если первая и последняя кординаты объекта равны
+                    {
+                        AppSettings.ObjectType[objCur] = 'P'; // Он отмечается как закрытый
+                        AppSettings.PolygonX[AppSettings.ObjLast[objCur]] = 0; // Cтирается из массива данных координата X
+                        AppSettings.PolygonY[AppSettings.ObjLast[objCur]] = 0; // Cтирается из массива данных координата Y
+                        AppSettings.ObjLast[objCur] = AppSettings.ObjLast[objCur] - 1; // и переносится указатель последней строки объекта на одну строку к началу
+                    }
+                    else
+                    {
+                        AppSettings.ObjectType[objCur] = 'L'; // Он отмечается как открытый
+                    }
+                }
+
+                if (AppSettings.ObjectType[objCur] == 'P')
+                {
+                    closedObjects++;
+                }
+            }
+
+            DebugTextBox.Text += $"Определено Закрытых: {closedObjects} Открытых: {AppSettings.ObjLen - closedObjects} \n";
+        }
+
+        private void FormatArrayAddAfter(int objBegin, int polyRecords) // Раздвигаем массив после
+        {
+            AppSettings.PolyLen += polyRecords; // Новая длина массива координат
+            Array.Resize(ref AppSettings.PolygonX, AppSettings.PolyLen + 1); // Расширяем массив
+            Array.Resize(ref AppSettings.PolygonY, AppSettings.PolyLen + 1); // Расширяем массив
+            for (var polyCur = AppSettings.PolyLen - polyRecords; polyCur >= AppSettings.ObjLast[objBegin] + 1; polyCur--)
+            {
+                AppSettings.PolygonX[polyCur + polyRecords] = AppSettings.PolygonX[polyCur];
+                AppSettings.PolygonY[polyCur + polyRecords] = AppSettings.PolygonY[polyCur];
+            }
+
+            for (var polyCur = AppSettings.ObjLast[objBegin] + 1; polyCur <= AppSettings.ObjLast[objBegin] + polyRecords; polyCur++)
+            {
+                AppSettings.PolygonX[polyCur] = 0;
+                AppSettings.PolygonY[polyCur] = 0;
+            }
+
+            AppSettings.ObjLast[objBegin] = AppSettings.ObjLast[objBegin] + polyRecords;
+            for (var objCur = objBegin + 1; objCur <= AppSettings.ObjLen; objCur++)
+            {
+                AppSettings.ObjFirst[objCur] = AppSettings.ObjFirst[objCur] + polyRecords;
+                AppSettings.ObjLast[objCur] = AppSettings.ObjLast[objCur] + polyRecords;
+            }
+        }
+
+        private void FormatArrayAddBefore(int objBegin, int polyRecords) // Раздвигаем массив перед
+        {
+            AppSettings.PolyLen += polyRecords; // Новая длина массива координат
+            Array.Resize(ref AppSettings.PolygonX, AppSettings.PolyLen + 1); // Расширяем массив
+            Array.Resize(ref AppSettings.PolygonY, AppSettings.PolyLen + 1); // Расширяем массив
+            for (var polyCur = AppSettings.PolyLen - polyRecords; polyCur >= AppSettings.ObjFirst[objBegin]; polyCur--)
+            {
+                AppSettings.PolygonX[polyCur + polyRecords] = AppSettings.PolygonX[polyCur];
+                AppSettings.PolygonY[polyCur + polyRecords] = AppSettings.PolygonY[polyCur];
+            }
+
+            for (var polyCur = AppSettings.ObjFirst[objBegin]; polyCur <= AppSettings.ObjFirst[objBegin] + polyRecords - 1; polyCur++)
+            {
+                AppSettings.PolygonX[polyCur] = 0;
+                AppSettings.PolygonY[polyCur] = 0;
+            }
+
+            AppSettings.ObjLast[objBegin] = AppSettings.ObjLast[objBegin] + polyRecords;
+            for (var objCur = objBegin + 1; objCur <= AppSettings.ObjLen; objCur++)
+            {
+                AppSettings.ObjFirst[objCur] = AppSettings.ObjFirst[objCur] + polyRecords;
+                AppSettings.ObjLast[objCur] = AppSettings.ObjLast[objCur] + polyRecords;
+            }
+        }
+
+        private void FileSaveAndCloseButton_ClickAction(object sender, RoutedEventArgs e) // Сохранение файла
+        {
+            // ReverseInnerPolygons() ' Делаем внутренние вложенные нечетные полигоны встречными по отношению к основному движению
+            // Обращение к функции вынесено в функцию открытия файла, чтобы все объекты были подписаны при выводе на экран
+            // --------------------------------------------------------------------------------------------------------------------------
+            // вероятно в верхней функции притаилась ошибка, т.к. нужно делать встречными по отношению к основномнуму движению не внутренние нечетные полигоны, а все внутренние полигоны первого уровня вложенности.
+            // либо все полигоны, а потом слуедующущую вложенность еще раз перекрутить.
+            // --------------------------------------------------------------------------------------------------------------------------
+            if (OpenVectorsCombobox.SelectedIndex == 1) // Если выбрано что линии режутся от конца к началу, то меняем направление всех линий.
+            {
+                ReverseLines(); // Меняем у всех открытых Объектов направление движения на противоположное
+            }
+
+            if (CloseVectorProcessingCombobox1.SelectedIndex == 1) // Если выбрано что закрытые объекты режутся встречно, то меняем направление всех полигонов.
+            {
+                ReversePolygons(); // Меняем у всех Закрытых полигонов направление движения на противоположное
+            }
+
+            if (AppSettings.MillXY0 == 6 || AppSettings.MillXY0 == 8) // Если выбраны режимы с резкой лицом вниз
+            {
+                ReverseObjects(); // Меняем у всех действительных  объектов направление движения на противоположное
+            }
+
+            if (AppSettings.MillZ1 == 0 || AppSettings.MillZ1 > Math.Abs(AppSettings.MillZStart - AppSettings.MillZ))
+            {
+                AppSettings.MillZ1 = Math.Abs(AppSettings.MillZStart - AppSettings.MillZ); // Если глубина за 1 проход = 0, то пилим сразу все за один проход
+                if (AppSettings.MillZ1 == 0)
+                {
+                    AppSettings.MillZ1 = 10000; // Бесконечно большое значение, чтобы цикл отработал только 1 раз
+                }
+
+                AppSettings.MillZStart = AppSettings.MillZ;
             }
             else
             {
-                AppSettings.PluPercentAuto = AppSettings.PluPercent;
+                float millZFull = Convert.ToSingle(Math.Round(Math.Abs(AppSettings.MillZStart - AppSettings.MillZ), 3)); // Реальная общая глубина резки от начала до конца
+                int millZSteps = Convert.ToInt32(Math.Ceiling(millZFull / AppSettings.MillZ1)); // Количество целых проходов округленное в сторону увеличения.
+                AppSettings.MillZ1 = Convert.ToSingle(Math.Round(Math.Abs(millZFull / millZSteps), 3)); // Реальный новый дробный шаг одного прохода
+                float millZRest = millZFull - (AppSettings.MillZ1 * (millZSteps - 1)); // Верхний остаток при осуществлении (всех проходов -1)
+                AppSettings.MillZStart -= millZRest; // Начало первого прохода с учетом первого погружения по верхнему остатку
             }
 
-            FormatArrayToZero();
-            while (AppSettings.PolygonMaxX > AppSettings.MaxTableSizeX && AppSettings.AutoSizePercent == 1)
+            DebugTextBox.Text += $"\nОчищаем папку: {AppSettings.SaveDirectory}\\ \n";
+            foreach (string file in Directory.GetFiles(AppSettings.SaveDirectory, "*.g")) // Очищаем текущую директорию от всех файлов *.g*
             {
-                AppSettings.PluPercentAuto /= 10;
-                readFilePLT(); // Открываем, считываем все вектора в массив и закрываем файл
-                FormatArrayLP(); // Поиск открытых и закрытых объектов
-                AppSettings.ConnectCount = 1; // Устанавливаем счетчик соединений, чтобы запустить первый проход
-                while (AppSettings.ConnectCount != 0)
+                File.Delete(file);
+            }
+
+            foreach (string file in Directory.GetFiles(AppSettings.SaveDirectory, "*.nc")) // Очищаем текущую директорию от всех файлов *.nc*
+            {
+                File.Delete(file);
+            }
+
+            var iRand = 0;
+            var rand = new Random(DateTime.Now.Millisecond);
+            iRand = rand.Next(100, 999); // Создаем случайное число для добавление в имя файла, чтобы не было повторов
+            DebugTextBox.Text += $"Записывается: {AppSettings.SaveDirectory}\\{AppSettings.FileName}.{iRand}.g \n";
+            using (var streamWriter = new StreamWriter($"{AppSettings.SaveDirectory}\\{AppSettings.FileName}.{iRand}.g"))
+            {
+                streamWriter.WriteLine($"{LineNumber()}%"); // начало файла NC
+                var laserOffset = 0f;
+                if (AppSettings.MillXY0 > 2) // если по лазеру, учитываем смещение лазера по Y
                 {
-                    FormatArrayConnect(); // Находим и соединяем вектора разных объектов в один
-                    FormatArrayLP(); // Поиск открытых и закрытых объектов
-                    FormatArrayDefrag(); // Дефрагментация и упорядочивание массива объектов
+                    laserOffset = AppSettings.LaserY;
+                }
+                else // по фрезе не учитываем смещение по Y, принимаем его за 0
+                {
+                    laserOffset = 0f;
                 }
 
-                FormatArrayToZero();
+                if (AppSettings.MillXY0 == 0 || AppSettings.MillXY0 == 1 || AppSettings.MillXY0 == 3 || AppSettings.MillXY0 == 4)
+                {
+                    // если по фрезе, по фрезе и 0, по лазеру или по лазеру и 0
+                    streamWriter.WriteLine($"{LineNumber()}T01 M06 M08"); // Выбираем инструмент 01, включаем охлаждение
+                    streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)} S{AppSettings.MillS} M03"); // Поднимем фрезу и Запустим шпиндель с его скоростью
+                    streamWriter.WriteLine($"{LineNumber()}G92 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // установка текущих координат
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Waiting {AppSettings.MillP / 1000} seconds for start spindel... =\""); // Выводим надпись на экран
+                    streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillP}"); // Задержка на разгон шпинделя
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Выводим надпись на экран
+                }
+                else if (AppSettings.MillXY0 == 5) // По лазеру и точкам 1 и 0
+                {
+                    streamWriter.WriteLine($"{LineNumber()}'----- И  Н  С  Т  Р  У  К  Ц  И  Я -----");
+                    streamWriter.WriteLine($"{LineNumber()}' 1. ПРОВЕРИТЬ или ВВЕСТИ значения:");
+                    streamWriter.WriteLine($"{LineNumber()}'(Файл=>Править Загруженный Файл)");
+                    streamWriter.WriteLine($"{LineNumber()}#1={ToNCString(AppSettings.MillX1)} ' =X= (миллиметры)");
+                    streamWriter.WriteLine($"{LineNumber()}#2={ToNCString(AppSettings.MillY1)} ' =Y= (миллиметры)");
+                    streamWriter.WriteLine($"{LineNumber()}'(Файл=>Сохранить и Загрузить)");
+                    streamWriter.WriteLine($"{LineNumber()}' 2. ОТКАЛИБРОВАТЬ поверхность (7-я иконка)");
+                    streamWriter.WriteLine($"{LineNumber()}' 3. Положить ЛИЦОМ ВВЕРХ, ШАПКОЙ ОТ СЕБЯ");
+                    streamWriter.WriteLine($"{LineNumber()}' 4. поставить ТОЧКУ =0= ПОД ЛАЗЕР и закрепить");
+                    streamWriter.WriteLine($"{LineNumber()}' 5. НАЖАТЬ =СТАРТ= (F9)");
+                    streamWriter.WriteLine($"{LineNumber()}' 6. Подвинуть ТОЧКУ =1= ПОД ЛАЗЕР и закрепить");
+                    streamWriter.WriteLine($"{LineNumber()}' 7. Через \" & MillP / 1000 & \" секунд НАЧНЕТСЯ РЕЗКА.");
+                    streamWriter.WriteLine($"{LineNumber()}'------- ЭТО ПРОГРАММА - ЕЁ НЕ МЕНЯТЬ ---------");
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Выводим надпись на экран
+                    streamWriter.WriteLine($"{LineNumber()}T01 M06 M08"); // Выбираем инструмент 01, включаем охлаждение
+                    streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)} S{AppSettings.MillS} M03"); // Поднимем фрезу и Запустим шпиндель с его скоростью
+                    streamWriter.WriteLine($"{LineNumber()}G92 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // установка текущих координат
+                    streamWriter.WriteLine($"{LineNumber()}G00 X=#1 Y=#2+{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // едем к точке 1
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Waiting {AppSettings.MillP / 1000} seconds for start spindel... =\""); // Выводим надпись на экран
+                    streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillP}"); // Задержка на разгон шпинделя
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Выводим надпись на экран
+                }
+                else if (AppSettings.MillXY0 == 2) // По фрезе и точкам 1 и 0
+                {
+                    streamWriter.WriteLine($"{LineNumber()}'----- И  Н  С  Т  Р  У  К  Ц  И  Я -----");
+                    streamWriter.WriteLine($"{LineNumber()}' 1. ПРОВЕРИТЬ или ВВЕСТИ значения:");
+                    streamWriter.WriteLine($"{LineNumber()}'(Файл=>Править Загруженный Файл)");
+                    streamWriter.WriteLine($"{LineNumber()}#1={ToNCString(AppSettings.MillX1)} ' =X= (миллиметры)");
+                    streamWriter.WriteLine($"{LineNumber()}#2={ToNCString(AppSettings.MillY1)} ' =Y= (миллиметры)");
+                    streamWriter.WriteLine($"{LineNumber()}'(Файл=>Сохранить и Загрузить)");
+                    streamWriter.WriteLine($"{LineNumber()}' 2. ОТКАЛИБРОВАТЬ поверхность (7-я иконка)");
+                    streamWriter.WriteLine($"{LineNumber()}' 3. Положить ЛИЦОМ ВВЕРХ, ШАПКОЙ ОТ СЕБЯ");
+                    streamWriter.WriteLine($"{LineNumber()}' 4. поставить ФРЕЗУ НА ТОЧКОЙ =0= и закрепить");
+                    streamWriter.WriteLine($"{LineNumber()}' 5. НАЖАТЬ =СТАРТ= (F9)");
+                    streamWriter.WriteLine($"{LineNumber()}' 6. Подвинуть ТОЧКУ =1= ПОД ФРЕЗУ и закрепить");
+                    streamWriter.WriteLine($"{LineNumber()}' 7. Через {AppSettings.MillP / 1000 / 2} секунд запустится ШПИНДЕЛЬ.");
+                    streamWriter.WriteLine($"{LineNumber()}' 8. Через {AppSettings.MillP / 1000} секунд НАЧНЕТСЯ РЕЗКА.");
+                    streamWriter.WriteLine($"{LineNumber()}'------- ЭТО ПРОГРАММА - ЕЁ НЕ МЕНЯТЬ ---------");
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Выводим надпись на экран
+                    streamWriter.WriteLine($"{LineNumber()}T01 M06 M08"); // Выбираем инструмент 01, включаем охлаждение
+                    streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)}"); // Поднимем фрезу
+                    streamWriter.WriteLine($"{LineNumber()}M05"); // остановка шпинделя
+                    streamWriter.WriteLine($"{LineNumber()}G92 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // установка текущих координат
+                    streamWriter.WriteLine($"{LineNumber()}G00 X=#1 Y=#2 Z{ToNCString(AppSettings.SafeZ)}"); // едем к точке 1
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Warning!!! after {AppSettings.MillP / 1000 / 2} seconds spindel start ... =\""); // Выводим надпись на экран
+                    streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillP / 2}"); // Задержка на позиционирование по фрезе перед запуском шпинделя
+                    streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)} S{AppSettings.MillS} M03"); // Поднимем фрезу и Запустим шпиндель с его скоростью
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Waiting {AppSettings.MillP / 1000} seconds for start spindel... =\""); // Выводим надпись на экран
+                    streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillP}"); // Задержка на разгон шпинделя
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Выводим надпись на экран
+                }
+                else if (AppSettings.MillXY0 == 6) // По лазеру ЛИЦОМ ВНИЗ и точкам 1 и 0
+                {
+                    streamWriter.WriteLine($"{LineNumber()}'----- И  Н  С  Т  Р  У  К  Ц  И  Я -----");
+                    streamWriter.WriteLine($"{LineNumber()}' 1. ПРОВЕРИТЬ или ВВЕСТИ значения:");
+                    streamWriter.WriteLine($"{LineNumber()}'(Файл=>Править Загруженный Файл)");
+                    streamWriter.WriteLine($"{LineNumber()}#1={ToNCString(AppSettings.MillX1)} ' =X= (миллиметры)");
+                    streamWriter.WriteLine($"{LineNumber()}#2={ToNCString(AppSettings.MillY1)} ' =Y= (миллиметры)");
+                    streamWriter.WriteLine($"{LineNumber()}'(Файл=>Сохранить и Загрузить)");
+                    streamWriter.WriteLine($"{LineNumber()}' 2. ОТКАЛИБРОВАТЬ поверхность (7-я иконка)");
+                    streamWriter.WriteLine($"{LineNumber()}' 3. Положить ЛИЦОМ ВНИЗ, ШАПКОЙ К СЕБЕ");
+                    streamWriter.WriteLine($"{LineNumber()}' 4. поставить ТОЧКУ =0= ПОД ЛАЗЕР и закрепить");
+                    streamWriter.WriteLine($"{LineNumber()}' 5. НАЖАТЬ =СТАРТ= (F9)");
+                    streamWriter.WriteLine($"{LineNumber()}' 6. Подвинуть вторую ТОЧКУ ПОД ЛАЗЕР и закрепить");
+                    streamWriter.WriteLine($"{LineNumber()}' 7. Через {AppSettings.MillP / 1000} секунд НАЧНЕТСЯ РЕЗКА.");
+                    streamWriter.WriteLine($"{LineNumber()}'------- ЭТО ПРОГРАММА - ЕЁ НЕ МЕНЯТЬ ---------");
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Выводим надпись на экран
+                    streamWriter.WriteLine($"{LineNumber()}T01 M06 M08"); // Выбираем инструмент 01, включаем охлаждение
+                    streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)} S{AppSettings.MillS} M03"); // Поднимем фрезу и Запустим шпиндель с его скоростью
+                    streamWriter.WriteLine($"{LineNumber()}G92 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // установка текущих координат
+                    streamWriter.WriteLine($"{LineNumber()}G51 J0 P-1"); // Отразим зеркально систему координат по Y
+                    streamWriter.WriteLine($"{LineNumber()}G00 X=#1 Y=#2-{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // едем к точке 1
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Waiting {AppSettings.MillP / 1000} seconds for start spindel... =\""); // Выводим надпись на экран
+                    streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillP}"); // Задержка на разгон шпинделя
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Выводим надпись на экран
+                }
+                else if (AppSettings.MillXY0 == 7) // По лазеру и точкам 0, 1 и 2
+                {
+                    streamWriter.WriteLine($"{LineNumber()}'----- И  Н  С  Т  Р  У  К  Ц  И  Я -----");
+                    streamWriter.WriteLine($"{LineNumber()}' 1. ОТКАЛИБРОВАТЬ поверхность (7-я иконка)");
+                    streamWriter.WriteLine($"{LineNumber()}' 2. Положить ЛИЦОМ ВВЕРХ, ШАПКОЙ ОТ СЕБЯ");
+                    streamWriter.WriteLine($"{LineNumber()}' 3. ЛАЗЕР на ТОЧКУ =0=, закрепить и НАЖАТЬ =СТАРТ= (F9)");
+                    streamWriter.WriteLine($"{LineNumber()}' 4. ТОЧКУ -1- макс. подвинуть под лазер, потом (Операции => Покачивать)\n");
+                    streamWriter.WriteLine($"{LineNumber()}' 5. Перемещая ЛАЗЕР, точно установить его на ТОЧКУ -1- и =СТАРТ= (F9)\n");
+                    streamWriter.WriteLine($"{LineNumber()}' 6. (Операции => Покачивать) установить ЛАЗЕР точно на ТОЧКУ -2-\n");
+                    streamWriter.WriteLine($"{LineNumber()}' 7. ЗАКРЕПИТЬ! По выходу шпинделя на обороты нажать =СТАРТ= (F9)\n");
+                    streamWriter.WriteLine($"{LineNumber()}' 8. РЕЗКА начнется НЕЗАМЕДЛИТЕЛЬНО!");
+                    streamWriter.WriteLine($"{LineNumber()}'------- ЭТО ПРОГРАММА - ЕЁ НЕ МЕНЯТЬ ---------");
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Очищаем область сообщений
+                    streamWriter.WriteLine($"{LineNumber()}T01 M06 M08"); // Выбираем инструмент 01, включаем охлаждение
+                    streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)} M05"); // Поднимем фрезу и остановим шпиндель
+                    streamWriter.WriteLine($"{LineNumber()}#1={ToNCString(AppSettings.MillX1)} ' =X1=");
+                    streamWriter.WriteLine($"{LineNumber()}#2={ToNCString(AppSettings.MillY1)} ' =Y1=");
+                    streamWriter.WriteLine($"{LineNumber()}#3={ToNCString(AppSettings.MillX2)} ' =X2=");
+                    streamWriter.WriteLine($"{LineNumber()}#4={ToNCString(AppSettings.MillY2)} ' =Y2=");
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Очищаем область сообщений
+                    streamWriter.WriteLine($"{LineNumber()}G92 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // установка текущих координат
+                    streamWriter.WriteLine($"{LineNumber()}G00 X=#1 Y=#2+{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // едем к точке 1
+                    streamWriter.WriteLine($"{LineNumber()}G906"); // Синхронизация
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"|W| -=< Correct Point -1- & START(F9) again to Continue >=-\""); // Сообщение о коррекции точки 1
+                    streamWriter.WriteLine($"{LineNumber()}M00"); // Останов на паузу для коррекции
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Очищаем область сообщений
+                    streamWriter.WriteLine($"{LineNumber()}G906"); // Синхронизация
+                    streamWriter.WriteLine($"{LineNumber()}IF (#1) #5=#SSCURWORKCOOR0/#1"); // Получаем первичный масштаб по Х
+                    streamWriter.WriteLine($"{LineNumber()}IF (!#1) #5=(#SSCURWORKCOOR0+0.001)/(#1+0.001)"); // Получаем первичный масштаб по Х, если X равен нулю
+                    streamWriter.WriteLine($"{LineNumber()}IF (#2+{ToNCString(laserOffset)}) #6=#SSCURWORKCOOR1/(#2+{ToNCString(laserOffset)})"); // Получаем первичный масштаб по Y
+                    streamWriter.WriteLine($"{LineNumber()}IF (!(#2+{ToNCString(laserOffset)})) #6=(#SSCURWORKCOOR1+0.001)/(#2+{ToNCString(laserOffset)}+0.001)"); // Получаем первичный масштаб по Y, если Y равен нулю
+                    streamWriter.WriteLine($"{LineNumber()}S{AppSettings.MillS} M03"); // Запустим шпиндель с его скоростью
+                    streamWriter.WriteLine($"{LineNumber()}G00 X=(#3*#5) Y=((#4+{ToNCString(laserOffset)})*#6)"); // едем к точке 2 уже с учетом полученного масштаба
+                    streamWriter.WriteLine($"{LineNumber()}G906"); // Синхронизация
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"|W| -=< Correct Point -2- & START(F9) again to Continue >=-\""); // Сообщение о коррекции точки 2
+                    streamWriter.WriteLine($"{LineNumber()}M00"); // Останов на паузу для коррекции
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Очищаем область сообщений
+                    streamWriter.WriteLine($"{LineNumber()}G906"); // Синхронизация
+                    streamWriter.WriteLine($"{LineNumber()}IF (#3) #7=#SSCURWORKCOOR0/#3"); // Получаем результирующий масштаб по Х
+                    streamWriter.WriteLine($"{LineNumber()}IF (!#3) #7=(#SSCURWORKCOOR0+0.001)/(#3+0.001)"); // Получаем результирующий масштаб по Х, если X равен нулю
+                    streamWriter.WriteLine($"{LineNumber()}IF (#4+{ToNCString(laserOffset)}) #8=#SSCURWORKCOOR1/(#4+{ToNCString(laserOffset)})"); // Получаем результирующий масштаб по Y
+                    streamWriter.WriteLine($"{LineNumber()}IF (!(#4+{ToNCString(laserOffset)})) #8=(#SSCURWORKCOOR1+0.001)/(#4+{ToNCString(laserOffset)}+0.001)"); // Получаем результирующий масштаб по Y, если Y равен нулю
+                    streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Waiting {AppSettings.MillPs / 1000} seconds for start spindel... =\""); // Выводим надпись на экран
+                    streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillPs}"); // Задержка на разгон шпинделя
+                }
+
+                var curOperateObject = 0; // Текущий обрабатываемый объект
+                AppSettings.ObjParent[0] = -1; // Для определения что вылезли выше верхнего уровня
+                var curXPoint = 0f; // Текущая точка X
+                var curYPoint = 0f + laserOffset; // Текущая точка Y
+
+                if (AppSettings.MillXY0 > 1 && AppSettings.MillXY0 != 3 && AppSettings.MillXY0 != 4) // если выбрана привязка к точкам 1 или 1 и 2
+                {
+                    if (AppSettings.MillX1 != 0 && AppSettings.MillY1 != 0) // если есть точка 1
+                    {
+                        curXPoint = AppSettings.MillX1; // Текущая точка Х равна точке 1
+                        curYPoint = AppSettings.MillY1 + laserOffset; // Текущая точка Y равна точке 1
+                        if (AppSettings.MillXY0 == 6 || AppSettings.MillXY0 == 8)
+                        {
+                            curYPoint = AppSettings.MillY1 - laserOffset;
+                        }
+                    }
+
+                    if (AppSettings.MillX2 != 0 && AppSettings.MillY2 != 0) // если есть точка 2
+                    {
+                        curXPoint = AppSettings.MillX2; // Текущая точка Х равна точке 2
+                        curYPoint = AppSettings.MillY2 + laserOffset; // Текущая точка Y равна точке 2
+                        if (AppSettings.MillXY0 == 6 || AppSettings.MillXY0 == 8)
+                        {
+                            curYPoint = AppSettings.MillY1 - laserOffset;
+                        }
+                    }
+                }
+
+                if (AppSettings.MillXY0 != 0 && AppSettings.MillXY0 != 3) // Если обработка пойдет не от нижнего левого угла
+                {
+                    for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // перебираем все объекты
+                    {
+                        if (AppSettings.ObjectType[objCur] == 'P' || AppSettings.ObjectType[objCur] == 'L') // и только действительные их них
+                        {
+                            for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // перебираем все поля каждого объекта
+                            {
+                                AppSettings.PolygonX[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.PolyCur] - AppSettings.Point0X; // Смещаем коорждинаты объекта на положение точки =0=
+                                AppSettings.PolygonY[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.PolyCur] - AppSettings.Point0Y; // Смещаем коорждинаты объекта на положение точки =0=
+                            }
+                        }
+                    }
+                } // Конец условия если обработка пойдет не от нижнего левого угла
+
+                // теперь идет непосредственно сам вывод координат в файл
+                while (curOperateObject >= 0) // Крутим цикл пока есть хоть один ближайший объект на родительском уровне 0
+                {
+                    GetChildList(curOperateObject); // Считываем всех потомков и заносим их в массивчик
+                    if (AppSettings.ChildListLen != 0) // Если в массивчике есть объекты
+                    {
+                        float curShortestDistance = PointsDistance(0, 0, AppSettings.PolygonMaxX, AppSettings.PolygonMaxY); // текущая наименьшая дистанция
+                        var newShortestDistance = 0f;
+                        for (var objCur = 1; objCur <= AppSettings.ChildListLen; objCur++)
+                        {
+                            newShortestDistance = ShortestDistanceToObject(curXPoint, curYPoint, AppSettings.ChildList[objCur]);
+                            if ((AppSettings.ObjectType[AppSettings.ChildList[objCur]] == 'P' || AppSettings.ObjectType[AppSettings.ChildList[objCur]] == 'L') && newShortestDistance < curShortestDistance)
+                            {
+                                curShortestDistance = newShortestDistance;
+                                curOperateObject = AppSettings.ChildList[objCur]; // Наиближайший объект становится текущим
+                            }
+                        }
+
+                        if (curShortestDistance == PointsDistance(0, 0, AppSettings.PolygonMaxX, AppSettings.PolygonMaxY)) // Если массивчик есть но в нем так и не нашли валидных объектов
+                        {
+                            // то очистим у текущего объекта список его дочерних, т.к. он уже весь отработан.
+                            AppSettings.ObjChilds[curOperateObject] = "";
+                            // и при следующем проходе окажется что массивчика уже нет
+                        }
+                    }
+                    else // если в массивчике нет объектов
+                    {
+                        // выводим тот объект в файл что есть, тоесть текущий
+                        if (AppSettings.ObjectType[curOperateObject] == 'P' || AppSettings.ObjectType[curOperateObject] == 'L') // eсли это действительные объекты
+                        {
+                            RotateBeginOfObjectToPoint(curXPoint, curYPoint, curOperateObject); // Повернем объект ближней точкой к текущей
+                            for (float millZCur = AppSettings.MillZStart; millZCur <= AppSettings.MillZ; millZCur += AppSettings.MillZ1 * -1) // Цикл количества проходов
+                            {
+                                if (millZCur == AppSettings.MillZStart) // первое погружение при многопроходной резке
+                                {
+                                    if (AppSettings.MillXY0 == 7 || AppSettings.MillXY0 == 8) // Если по Лазеру и 0 1 2 точкам, то
+                                    {
+                                        streamWriter.WriteLine($"{LineNumber()}G00 X={ToNCString(AppSettings.PolygonX[AppSettings.ObjFirst[curOperateObject]])}*#7 Y={ToNCString(AppSettings.PolygonY[AppSettings.ObjFirst[curOperateObject]])}*#8 Z{ToNCString(AppSettings.SafeZ)}");
+                                        streamWriter.WriteLine($"{LineNumber()}G01 Z{ToNCString(millZCur)} F{AppSettings.MillFZ}");
+                                    }
+                                    else // если просто тогда
+                                    {
+                                        streamWriter.WriteLine($"{LineNumber()}G00 X{ToNCString(AppSettings.PolygonX[AppSettings.ObjFirst[curOperateObject]])} Y{ToNCString(AppSettings.PolygonY[AppSettings.ObjFirst[curOperateObject]])} Z{ToNCString(AppSettings.SafeZ)}");
+                                        streamWriter.WriteLine($"{LineNumber()}G01 Z{ToNCString(millZCur)} F{AppSettings.MillFZ}");
+                                    }
+                                }
+                                else // не первое погружение при многопроходовом режиме
+                                {
+                                    streamWriter.WriteLine($"{LineNumber()}G01 Z{ToNCString(millZCur)} F{AppSettings.MillFZ}");
+                                }
+
+                                for (AppSettings.PolyCur = AppSettings.ObjFirst[curOperateObject] + 1; AppSettings.PolyCur <= AppSettings.ObjLast[curOperateObject]; AppSettings.PolyCur++) // проходим по всем строкам начиная со второй
+                                {
+                                    if (AppSettings.PolyCur == (AppSettings.ObjFirst[curOperateObject] + 1)) // если это первая строка
+                                    {
+                                        if (AppSettings.MillXY0 == 7 || AppSettings.MillXY0 == 8) // Если по Лазеру и 0 1 2 точкам, то
+                                        {
+                                            streamWriter.WriteLine($"{LineNumber()}G01 X={ToNCString(AppSettings.PolygonX[AppSettings.PolyCur])}*#7 Y={ToNCString(AppSettings.PolygonY[AppSettings.PolyCur])}*#8 F{AppSettings.MillF}"); // то дописываем еще в конце подачу
+                                        }
+                                        else // если просто тогда
+                                        {
+                                            streamWriter.WriteLine($"{LineNumber()}G01 X{ToNCString(AppSettings.PolygonX[AppSettings.PolyCur])} Y{ToNCString(AppSettings.PolygonY[AppSettings.PolyCur])} F{AppSettings.MillF}"); // то дописываем еще в конце подачу
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (AppSettings.MillXY0 == 7 || AppSettings.MillXY0 == 8) // Если по Лазеру и 0 1 2 точкам, то
+                                        {
+                                            streamWriter.WriteLine($"{LineNumber()}X={ToNCString(AppSettings.PolygonX[AppSettings.PolyCur])}*#7 Y={ToNCString(AppSettings.PolygonY[AppSettings.PolyCur])}*#8"); // просто бежим по значениям
+                                        }
+                                        else // если просто тогда
+                                        {
+                                            streamWriter.WriteLine($"{LineNumber()}X{ToNCString(AppSettings.PolygonX[AppSettings.PolyCur])} Y{ToNCString(AppSettings.PolygonY[AppSettings.PolyCur])}"); // просто бежим по значениям
+                                        }
+                                    }
+                                } // конец вывода в файл всех строк объекта
+
+                                if (AppSettings.ObjectType[curOperateObject] == 'P') // если текущий объект был закрытым
+                                {
+                                    // то дописываем в конце еще раз первую строку чтобы его закрыть
+                                    if (AppSettings.MillXY0 == 7 || AppSettings.MillXY0 == 8) // Если по Лазеру и 0 1 2 точкам, то
+                                    {
+                                        streamWriter.WriteLine($"{LineNumber()}X={ToNCString(AppSettings.PolygonX[AppSettings.ObjFirst[curOperateObject]])}*#7 Y={ToNCString(AppSettings.PolygonY[AppSettings.ObjFirst[curOperateObject]])}*#8");
+                                    }
+                                    else // если просто тогда
+                                    {
+                                        streamWriter.WriteLine($"{LineNumber()}X{ToNCString(AppSettings.PolygonX[AppSettings.ObjFirst[curOperateObject]])} Y{ToNCString(AppSettings.PolygonY[AppSettings.ObjFirst[curOperateObject]])}");
+                                    }
+                                } // конец проверки закрытости объекта
+                            } // конец цикла количества проходов
+                        } // конец проверки действительности объекта
+
+                        AppSettings.ObjectType[curOperateObject] = 'N';
+                        curXPoint = AppSettings.PolygonX[AppSettings.ObjFirst[curOperateObject]]; // Текущая точка Х
+                        curYPoint = AppSettings.PolygonY[AppSettings.ObjFirst[curOperateObject]]; // Текущая точка Y
+                        curOperateObject = AppSettings.ObjParent[curOperateObject]; // Перейдем к вышестоящему обекту
+                    } // конец проверки массивчика на наличие в нем объектов
+                }
+
+                // финальные строки NC файла
+                streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)}"); // поднимаем фрезу
+                streamWriter.WriteLine($"{LineNumber()}M05 M09"); // остановка шпинделя и охлаждения
+                if (AppSettings.MillXY0 == 6 || AppSettings.MillXY0 == 8) // Если был переворот по оси Y
+                {
+                    streamWriter.WriteLine($"{LineNumber()}G00 X0.000 Y-{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // возвращение в начало
+                }
+                else if (AppSettings.MillXY0 == 7) // По лазеру и точкам 0, 1 и 2
+                {
+                    streamWriter.WriteLine($"{LineNumber()}G00 X0.000 Y{ToNCString(AppSettings.PolygonMaxY + laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // возвращение в начало
+                }
+                else // если не было переворота
+                {
+                    streamWriter.WriteLine($"{LineNumber()}G00 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}"); // возвращение в начало
+                }
+
+                streamWriter.WriteLine($"{LineNumber()}M30");
+                streamWriter.WriteLine($"{LineNumber()}'-= Created by <{AppSettings.ProgName} {AppSettings.Version}> =-");
             }
 
-            if (AppSettings.AutoSizePercent == 1)
-            {
-                AppSettings.PluPercent = AppSettings.PluPercentAuto;
-                SaveIniString("PluPercent", AppSettings.PluPercent.ToString());
-                ScaleTextBox.Text = AppSettings.PluPercent + "%";
-            }
+            AppSettings.MillZStart = Convert.ToSingle(TrimFormat09(StartZTextBox.Text));
+            AppSettings.MillZ1 = Convert.ToSingle(TrimFormat09(PassTextBox.Text));
+            AppSettings.MillZ = Convert.ToSingle(TrimFormat09(ResultZTextBox.Text));
+            DebugTextBox.Text += $"Закрыт: {AppSettings.SaveDirectory}\\{AppSettings.FileName}.{iRand}.g \n";
+            DebugTextBox.Text += $"Закрыт: {AppSettings.OpenDirectory}\\{AppSettings.FileName}{AppSettings.FileDim}";
+            FileNameFilterTextBox.Text = "";
+            AppSettings.IsFileLoaded = false;
+            App.Current.MainWindow.Title = $"{AppSettings.ProgName} {AppSettings.Version}";
+            FileSaveAndCloseButton.IsEnabled = false;
+            RotateButton.IsEnabled = false;
+            Canvas.Children.Clear();
+            Array.Resize(ref AppSettings.PolygonX, 1);
+            Array.Resize(ref AppSettings.PolygonY, 1);
+            AppSettings.FoundP0 = false;
+            AppSettings.FoundP1 = false;
+            AppSettings.PolyLen = 0; // Длина массива объектов
         }
 
-        private void FormatArrayToZero() // Приведение координат всех объектов к нулю в нижнем левом углу
+        private int GetNumberOfObjectsByRoot(int rootNumber)
         {
-            DebugTextBox.Text += "Приведение координат объектов к нижнему левому углу... ";
-            // Переведем сначала все длины в реальные миллиметры с учетом обратной пропорции масштаба при импорте
-            for (AppSettings.PolyCur = 1; AppSettings.PolyCur <= AppSettings.PolyLen; AppSettings.PolyCur++)
+            var result = 0;
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
             {
-                AppSettings.PolygonX[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.PolyCur] / AppSettings.PluInch * 25.4f * (AppSettings.PluPercentAuto / 100f);
-                AppSettings.PolygonY[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.PolyCur] / AppSettings.PluInch * 25.4f * (AppSettings.PluPercentAuto / 100f);
-            }
-
-            float polyXMin = AppSettings.PolygonX[1]; // Будем считать первую координату минимальной
-            float polyYMin = AppSettings.PolygonY[1]; // Будем считать первую координату минимальной
-            AppSettings.PolygonMaxX = AppSettings.PolygonX[2]; // Будем считать первую координату максимальной
-            AppSettings.PolygonMaxY = AppSettings.PolygonY[2]; // Будем считать первую координату максимальной
-            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
-            {
-                if (AppSettings.ObjectType[objCur] != 'D') // И только действительные из них
+                if (AppSettings.ObjRoot[objCur] == rootNumber && (AppSettings.ObjectType[objCur] == 'P' || AppSettings.ObjectType[objCur] == 'L'))
                 {
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Перебираем все действительные значения координат объекта
-                    {
-                        if (AppSettings.PolygonX[AppSettings.PolyCur] < polyXMin)
-                        {
-                            polyXMin = AppSettings.PolygonX[AppSettings.PolyCur];
-                        }
-
-                        if (AppSettings.PolygonY[AppSettings.PolyCur] < polyYMin)
-                        {
-                            polyYMin = AppSettings.PolygonY[AppSettings.PolyCur];
-                        }
-
-                        if (AppSettings.PolygonX[AppSettings.PolyCur] > AppSettings.PolygonMaxX)
-                        {
-                            AppSettings.PolygonMaxX = AppSettings.PolygonX[AppSettings.PolyCur];
-                        }
-
-                        if (AppSettings.PolygonY[AppSettings.PolyCur] > AppSettings.PolygonMaxY)
-                        {
-                            AppSettings.PolygonMaxY = AppSettings.PolygonY[AppSettings.PolyCur];
-                        }
-                    }
+                    result++;
                 }
             }
 
-            AppSettings.PolygonMaxX -= polyXMin; // Приводим к норме максимальное значение
-            AppSettings.PolygonMaxY -= polyYMin; // Приводим к норме максимальное значение
-            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем опять все объекты
-            {
-                if (AppSettings.ObjectType[objCur] != 'D') // И только действительные из них
-                {
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Перебираем все действительные значения координат объекта
-                    {
-                        AppSettings.PolygonX[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.PolyCur] - polyXMin; // Вычитаем из текущего значения минимально возможное
-                        AppSettings.PolygonY[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.PolyCur] - polyYMin; // Вычитаем из текущего значения минимально возможное
-                    }
-                }
-            }
-
-            DebugTextBox.Text += $"MaxX: {AppSettings.PolygonMaxX} MaxY: {AppSettings.PolygonMaxY} \n";
+            return result;
         }
+
+        private string TrimFormat09(string frmStringVal)
+        {
+            var result = "";
+            frmStringVal = frmStringVal.Trim();
+            var tmpCur = "";
+            for (var tmpLineNumber = 0; tmpLineNumber < frmStringVal.Length; tmpLineNumber++)
+            {
+                tmpCur = frmStringVal.Substring(tmpLineNumber, 1);
+                if (tmpCur == "-" || tmpCur == "1" || tmpCur == "2" || tmpCur == "3" || tmpCur == "4" || tmpCur == "5" || tmpCur == "6" || tmpCur == "7" || tmpCur == "8" || tmpCur == "9" || tmpCur == "0" || tmpCur == "." || tmpCur == ",")
+                {
+                    result += tmpCur;
+                }
+            }
+
+            result = result.Replace('.', AppSettings.Separator);
+            result = result.Replace(',', AppSettings.Separator);
+            if (result == "" || result == "-" || result == "." || result == ",")
+            {
+                result = "0";
+            }
+
+            if (result.IndexOf(AppSettings.Separator) != -1)
+            {
+                result = result.Substring(0, result.IndexOf(AppSettings.Separator)) + result.Substring(result.IndexOf(AppSettings.Separator) + 1, 3);
+            }
+
+            return result;
+        }
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
 
         private bool SaveIniString(string iniString, string iniValue) // Записываем в строку ини-файла значение
         {
@@ -1430,384 +1852,7 @@ namespace NCMillComposer
             }
         }
 
-        private void FileSaveAndCloseButton_Click(object sender, EventArgs e) // Сохранение файла
-        {
-            // ReverseInnerPolygons() ' Делаем внутренние вложенные нечетные полигоны встречными по отношению к основному движению
-            // Обращение к функции вынесено в функцию открытия файла, чтобы все объекты были подписаны при выводе на экран
-            // --------------------------------------------------------------------------------------------------------------------------
-            // вероятно в верхней функции притаилась ошибка, т.к. нужно делать встречными по отношению к основномнуму движению не внутренние нечетные полигоны, а все внутренние полигоны первого уровня вложенности.
-            // либо все полигоны, а потом слуедующущую вложенность еще раз перекрутить.
-            // --------------------------------------------------------------------------------------------------------------------------
-            if (OpenVectorsCombobox.SelectedIndex == 1) // Если выбрано что линии режутся от конца к началу, то меняем направление всех линий.
-            {
-                ReverseLines(); // Меняем у всех открытых Объектов направление движения на противоположное
-            }
-
-            if (CloseVectorProcessingCombobox1.SelectedIndex == 1) // Если выбрано что закрытые объекты режутся встречно, то меняем направление всех полигонов.
-            {
-                ReversePolygons(); // Меняем у всех Закрытых полигонов направление движения на противоположное
-            }
-
-            if (AppSettings.MillXY0 == 6 || AppSettings.MillXY0 == 8) // Если выбраны режимы с резкой лицом вниз
-            {
-                ReverseObjects(); // Меняем у всех действительных  объектов направление движения на противоположное
-            }
-
-            if (AppSettings.MillZ1 == 0 || AppSettings.MillZ1 > Math.Abs(AppSettings.MillZStart - AppSettings.MillZ))
-            {
-                AppSettings.MillZ1 = Math.Abs(AppSettings.MillZStart - AppSettings.MillZ); // Если глубина за 1 проход = 0, то пилим сразу все за один проход
-                if (AppSettings.MillZ1 == 0)
-                {
-                    AppSettings.MillZ1 = 10000; // Бесконечно большое значение, чтобы цикл отработал только 1 раз
-                }
-
-                AppSettings.MillZStart = AppSettings.MillZ;
-            }
-            else
-            {
-                float millZFull = Convert.ToSingle(Math.Round(Math.Abs(AppSettings.MillZStart - AppSettings.MillZ), 3)); // Реальная общая глубина резки от начала до конца
-                int millZSteps = Convert.ToInt32(Math.Ceiling(millZFull / AppSettings.MillZ1)); // Количество целых проходов округленное в сторону увеличения.
-                AppSettings.MillZ1 = Convert.ToSingle(Math.Round(Math.Abs(millZFull / millZSteps), 3)); // Реальный новый дробный шаг одного прохода
-                float millZRest = millZFull - (AppSettings.MillZ1 * (millZSteps - 1)); // Верхний остаток при осуществлении (всех проходов -1)
-                AppSettings.MillZStart -= millZRest; // Начало первого прохода с учетом первого погружения по верхнему остатку
-            }
-
-            DebugTextBox.Text += $"\n Очищаем папку: {AppSettings.SaveDirectory}\\ \n";
-            foreach (string file in Directory.GetFiles(AppSettings.SaveDirectory, "*.g")) // Очищаем текущую директорию от всех файлов *.g*
-            {
-                File.Delete(file);
-            }
-
-            foreach (string file in Directory.GetFiles(AppSettings.SaveDirectory, "*.nc")) // Очищаем текущую директорию от всех файлов *.nc*
-            {
-                File.Delete(file);
-            }
-
-            var iRand = 0;
-            var rand = new Random(DateTime.Now.Millisecond);
-            iRand = rand.Next(100, 999); // Создаем случайное число для добавление в имя файла, чтобы не было повторов
-            DebugTextBox.Text += $"Записывается: {AppSettings.SaveDirectory}\\{AppSettings.FileName}.{iRand}.g \n";
-            var streamWriter = new StreamWriter($"{AppSettings.SaveDirectory}\\{AppSettings.FileName}.{iRand}.g");
-            streamWriter.WriteLine($"{LineNumber()}%\n"); // начало файла NC
-            var laserOffset = 0f;
-            if (AppSettings.MillXY0 > 2) // если по лазеру, учитываем смещение лазера по Y
-            {
-                laserOffset = AppSettings.LaserY;
-            }
-            else
-            {
-                laserOffset = 0f;
-            }
-
-            if (AppSettings.MillXY0 == 0 || AppSettings.MillXY0 == 1 || AppSettings.MillXY0 == 3 || AppSettings.MillXY0 == 4)
-            {
-                // если по фрезе, по фрезе и 0, по лазеру или по лазеру и 0
-                streamWriter.WriteLine($"{LineNumber()}T01 M06 M08\n"); // Выбираем инструмент 01, включаем охлаждение
-                streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)} S{AppSettings.MillS} M03\n"); // Поднимем фрезу и Запустим шпиндель с его скоростью
-                streamWriter.WriteLine($"{LineNumber()}G92 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // установка текущих координат
-                streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Waiting {AppSettings.MillP / 1000} seconds for start spindel... =\"\n"); // Выводим надпись на экран
-                streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillP}\n"); // Задержка на разгон шпинделя
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Выводим надпись на экран
-            }
-            else if (AppSettings.MillXY0 == 5) // По лазеру и точкам 1 и 0
-            {
-                streamWriter.WriteLine($"{LineNumber()}'----- И  Н  С  Т  Р  У  К  Ц  И  Я -----\n");
-                streamWriter.WriteLine($"{LineNumber()}' 1. ПРОВЕРИТЬ или ВВЕСТИ значения:\n");
-                streamWriter.WriteLine($"{LineNumber()}'(Файл=>Править Загруженный Файл)\n");
-                streamWriter.WriteLine($"{LineNumber()}#1={ToNCString(AppSettings.MillX1)} ' =X= (миллиметры)\n");
-                streamWriter.WriteLine($"{LineNumber()}#2={ToNCString(AppSettings.MillY1)} ' =Y= (миллиметры)\n");
-                streamWriter.WriteLine($"{LineNumber()}'(Файл=>Сохранить и Загрузить)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 2. ОТКАЛИБРОВАТЬ поверхность (7-я иконка)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 3. Положить ЛИЦОМ ВВЕРХ, ШАПКОЙ ОТ СЕБЯ\n");
-                streamWriter.WriteLine($"{LineNumber()}' 4. поставить ТОЧКУ =0= ПОД ЛАЗЕР и закрепить\n");
-                streamWriter.WriteLine($"{LineNumber()}' 5. НАЖАТЬ =СТАРТ= (F9)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 6. Подвинуть ТОЧКУ =1= ПОД ЛАЗЕР и закрепить\n");
-                streamWriter.WriteLine($"{LineNumber()}' 7. Через \" & MillP / 1000 & \" секунд НАЧНЕТСЯ РЕЗКА.\n");
-                streamWriter.WriteLine($"{LineNumber()}'------- ЭТО ПРОГРАММА - ЕЁ НЕ МЕНЯТЬ ---------\n");
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Выводим надпись на экран
-                streamWriter.WriteLine($"{LineNumber()}T01 M06 M08\n"); // Выбираем инструмент 01, включаем охлаждение
-                streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)} S{AppSettings.MillS} M03\n"); // Поднимем фрезу и Запустим шпиндель с его скоростью
-                streamWriter.WriteLine($"{LineNumber()}G92 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // установка текущих координат
-                streamWriter.WriteLine($"{LineNumber()}G00 X=#1 Y=#2+{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // едем к точке 1
-                streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Waiting {AppSettings.MillP / 1000} seconds for start spindel... =\"\n"); // Выводим надпись на экран
-                streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillP}\n"); // Задержка на разгон шпинделя
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Выводим надпись на экран
-            }
-            else if (AppSettings.MillXY0 == 2) // По фрезе и точкам 1 и 0
-            {
-                streamWriter.WriteLine($"{LineNumber()}'----- И  Н  С  Т  Р  У  К  Ц  И  Я -----\n");
-                streamWriter.WriteLine($"{LineNumber()}' 1. ПРОВЕРИТЬ или ВВЕСТИ значения:\n");
-                streamWriter.WriteLine($"{LineNumber()}'(Файл=>Править Загруженный Файл)\n");
-                streamWriter.WriteLine($"{LineNumber()}#1={ToNCString(AppSettings.MillX1)} ' =X= (миллиметры)\n");
-                streamWriter.WriteLine($"{LineNumber()}#2={ToNCString(AppSettings.MillY1)} ' =Y= (миллиметры)\n");
-                streamWriter.WriteLine($"{LineNumber()}'(Файл=>Сохранить и Загрузить)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 2. ОТКАЛИБРОВАТЬ поверхность (7-я иконка)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 3. Положить ЛИЦОМ ВВЕРХ, ШАПКОЙ ОТ СЕБЯ\n");
-                streamWriter.WriteLine($"{LineNumber()}' 4. поставить ФРЕЗУ НА ТОЧКОЙ =0= и закрепить\n");
-                streamWriter.WriteLine($"{LineNumber()}' 5. НАЖАТЬ =СТАРТ= (F9)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 6. Подвинуть ТОЧКУ =1= ПОД ФРЕЗУ и закрепить\n");
-                streamWriter.WriteLine($"{LineNumber()}' 7. Через {AppSettings.MillP / 1000 / 2} секунд запуститься ШПИНДЕЛЬ.\n");
-                streamWriter.WriteLine($"{LineNumber()}' 8. Через {AppSettings.MillP / 1000} секунд НАЧНЕТСЯ РЕЗКА.\n");
-                streamWriter.WriteLine($"{LineNumber()}'------- ЭТО ПРОГРАММА - ЕЁ НЕ МЕНЯТЬ ---------\n");
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Выводим надпись на экран
-                streamWriter.WriteLine($"{LineNumber()}T01 M06 M08\n"); // Выбираем инструмент 01, включаем охлаждение
-                streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)}\n"); // Поднимем фрезу
-                streamWriter.WriteLine($"{LineNumber()}M05\n"); // остановка шпинделя
-                streamWriter.WriteLine($"{LineNumber()}G92 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // установка текущих координат
-                streamWriter.WriteLine($"{LineNumber()}G00 X=#1 Y=#2 Z{ToNCString(AppSettings.SafeZ)}\n"); // едем к точке 1
-                streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Warning!!! after {AppSettings.MillP / 1000 / 2} seconds spindel start ... =\"\n"); // Выводим надпись на экран
-                streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillP / 2}\n"); // Задержка на позиционирование по фрезе перед запуском шпинделя
-                streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)} S{AppSettings.MillS} M03\n"); // Поднимем фрезу и Запустим шпиндель с его скоростью
-                streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Waiting {AppSettings.MillP / 1000} seconds for start spindel... =\"\n"); // Выводим надпись на экран
-                streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillP}\n"); // Задержка на разгон шпинделя
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Выводим надпись на экран
-            }
-            else if (AppSettings.MillXY0 == 6) // По лазеру ЛИЦОМ ВНИЗ и точкам 1 и 0
-            {
-                streamWriter.WriteLine($"{LineNumber()}'----- И  Н  С  Т  Р  У  К  Ц  И  Я -----\n");
-                streamWriter.WriteLine($"{LineNumber()}' 1. ПРОВЕРИТЬ или ВВЕСТИ значения:\n");
-                streamWriter.WriteLine($"{LineNumber()}'(Файл=>Править Загруженный Файл)\n");
-                streamWriter.WriteLine($"{LineNumber()}#1={ToNCString(AppSettings.MillX1)} ' =X= (миллиметры)\n");
-                streamWriter.WriteLine($"{LineNumber()}#2={ToNCString(AppSettings.MillY1)} ' =Y= (миллиметры)\n");
-                streamWriter.WriteLine($"{LineNumber()}'(Файл=>Сохранить и Загрузить)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 2. ОТКАЛИБРОВАТЬ поверхность (7-я иконка)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 3. Положить ЛИЦОМ ВНИЗ, ШАПКОЙ К СЕБЕ\n");
-                streamWriter.WriteLine($"{LineNumber()}' 4. поставить ТОЧКУ =0= ПОД ЛАЗЕР и закрепить\n");
-                streamWriter.WriteLine($"{LineNumber()}' 5. НАЖАТЬ =СТАРТ= (F9)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 6. Подвинуть вторую ТОЧКУ ПОД ЛАЗЕР и закрепить\n");
-                streamWriter.WriteLine($"{LineNumber()}' 7. Через {AppSettings.MillP / 1000} секунд НАЧНЕТСЯ РЕЗКА.\n");
-                streamWriter.WriteLine($"{LineNumber()}'------- ЭТО ПРОГРАММА - ЕЁ НЕ МЕНЯТЬ ---------\n");
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Выводим надпись на экран
-                streamWriter.WriteLine($"{LineNumber()}T01 M06 M08\n"); // Выбираем инструмент 01, включаем охлаждение
-                streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)} S{AppSettings.MillS} M03\n"); // Поднимем фрезу и Запустим шпиндель с его скоростью
-                streamWriter.WriteLine($"{LineNumber()}G92 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // установка текущих координат
-                streamWriter.WriteLine($"{LineNumber()}G51 J0 P-1\n"); // Отразим зеркально систему координат по Y
-                streamWriter.WriteLine($"{LineNumber()}G00 X=#1 Y=#2-{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // едем к точке 1
-                streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Waiting {AppSettings.MillP / 1000} seconds for start spindel... =\"\n"); // Выводим надпись на экран
-                streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillP}\n"); // Задержка на разгон шпинделя
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Выводим надпись на экран
-            }
-            else if (AppSettings.MillXY0 == 7) // По лазеру и точкам 0, 1 и 2
-            {
-                streamWriter.WriteLine($"{LineNumber()}'----- И  Н  С  Т  Р  У  К  Ц  И  Я -----\n");
-                streamWriter.WriteLine($"{LineNumber()}' 1. ОТКАЛИБРОВАТЬ поверхность (7-я иконка)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 2. Положить ЛИЦОМ ВВЕРХ, ШАПКОЙ ОТ СЕБЯ\n");
-                streamWriter.WriteLine($"{LineNumber()}' 3. ЛАЗЕР на ТОЧКУ =0=, закрепить и НАЖАТЬ =СТАРТ= (F9)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 4. ТОЧКУ -1- макс. подвинуть под лазер, потом (Операции => Покачивать)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 5. Перемещая ЛАЗЕР, точно установить его на ТОЧКУ -1- и =СТАРТ= (F9)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 6. (Операции => Покачивать) установить ЛАЗЕР точно на ТОЧКУ -2-\n");
-                streamWriter.WriteLine($"{LineNumber()}' 7. ЗАКРЕПИТЬ! По выходу шпинделя на обороты нажать =СТАРТ= (F9)\n");
-                streamWriter.WriteLine($"{LineNumber()}' 8. РЕЗКА начнется НЕЗАМЕДЛИТЕЛЬНО!\n");
-                streamWriter.WriteLine($"{LineNumber()}'------- ЭТО ПРОГРАММА - ЕЁ НЕ МЕНЯТЬ ---------\n");
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Очищаем область сообщений
-                streamWriter.WriteLine($"{LineNumber()}T01 M06 M08\n"); // Выбираем инструмент 01, включаем охлаждение
-                streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)} M05\n"); // Поднимем фрезу и остановим шпиндель
-                streamWriter.WriteLine($"{LineNumber()}#1={ToNCString(AppSettings.MillX1)} ' =X1=\n");
-                streamWriter.WriteLine($"{LineNumber()}#2={ToNCString(AppSettings.MillY1)} ' =Y1=\n");
-                streamWriter.WriteLine($"{LineNumber()}#3={ToNCString(AppSettings.MillX2)} ' =X2=\n");
-                streamWriter.WriteLine($"{LineNumber()}#4={ToNCString(AppSettings.MillY2)} ' =Y2=\n");
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Очищаем область сообщений
-                streamWriter.WriteLine($"{LineNumber()}G92 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // установка текущих координат
-                streamWriter.WriteLine($"{LineNumber()}G00 X=#1 Y=#2+{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // едем к точке 1
-                streamWriter.WriteLine($"{LineNumber()}G906\n"); // Синхронизация
-                streamWriter.WriteLine($"{LineNumber()}M801 \"|W| -=< Correct Point -1- & START(F9) again to Continue >=-\"\n"); // Сообщение о коррекции точки 1
-                streamWriter.WriteLine($"{LineNumber()}M00\n"); // Останов на паузу для коррекции
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Очищаем область сообщений
-                streamWriter.WriteLine($"{LineNumber()}G906\n"); // Синхронизация
-                streamWriter.WriteLine($"{LineNumber()}IF (#1) #5=#SSCURWORKCOOR0/#1\n"); // Получаем первичный масштаб по Х
-                streamWriter.WriteLine($"{LineNumber()}IF (!#1) #5=(#SSCURWORKCOOR0+0.001)/(#1+0.001)\n"); // Получаем первичный масштаб по Х, если X равен нулю
-                streamWriter.WriteLine($"{LineNumber()}IF (#2+{ToNCString(laserOffset)}) #6=#SSCURWORKCOOR1/(#2+{ToNCString(laserOffset)})\n"); // Получаем первичный масштаб по Y
-                streamWriter.WriteLine($"{LineNumber()}IF (!(#2+{ToNCString(laserOffset)})) #6=(#SSCURWORKCOOR1+0.001)/(#2+{ToNCString(laserOffset)}+0.001)\n"); // Получаем первичный масштаб по Y, если Y равен нулю
-                streamWriter.WriteLine($"{LineNumber()}S{AppSettings.MillS} M03\n"); // Запустим шпиндель с его скоростью
-                streamWriter.WriteLine($"{LineNumber()}G00 X=(#3*#5) Y=((#4+{ToNCString(laserOffset)})*#6)\n"); // едем к точке 2 уже с учетом полученного масштаба
-                streamWriter.WriteLine($"{LineNumber()}G906\n"); // Синхронизация
-                streamWriter.WriteLine($"{LineNumber()}M801 \"|W| -=< Correct Point -2- & START(F9) again to Continue >=-\"\n"); // Сообщение о коррекции точки 2
-                streamWriter.WriteLine($"{LineNumber()}M00\n"); // Останов на паузу для коррекции
-                streamWriter.WriteLine($"{LineNumber()}M801 \"\"\n"); // Очищаем область сообщений
-                streamWriter.WriteLine($"{LineNumber()}G906\n"); // Синхронизация
-                streamWriter.WriteLine($"{LineNumber()}IF (#3) #7=#SSCURWORKCOOR0/#3\n"); // Получаем результирующий масштаб по Х
-                streamWriter.WriteLine($"{LineNumber()}IF (!#3) #7=(#SSCURWORKCOOR0+0.001)/(#3+0.001)\n"); // Получаем результирующий масштаб по Х, если X равен нулю
-                streamWriter.WriteLine($"{LineNumber()}IF (#4+{ToNCString(laserOffset)}) #8=#SSCURWORKCOOR1/(#4+{ToNCString(laserOffset)})\n"); // Получаем результирующий масштаб по Y
-                streamWriter.WriteLine($"{LineNumber()}IF (!(#4+{ToNCString(laserOffset)})) #8=(#SSCURWORKCOOR1+0.001)/(#4+{ToNCString(laserOffset)}+0.001)\n"); // Получаем результирующий масштаб по Y, если Y равен нулю
-                streamWriter.WriteLine($"{LineNumber()}M801 \"|W| = Waiting {AppSettings.MillPs / 1000} seconds for start spindel... =\"\n"); // Выводим надпись на экран
-                streamWriter.WriteLine($"{LineNumber()}G04 P{AppSettings.MillPs}\n"); // Задержка на разгон шпинделя
-            }
-
-            var curOperateObject = 0; // Текущий обрабатываемый объект
-            AppSettings.ObjParent[0] = -1; // Для определения что вылезли выше верхнего уровня
-            var curXPoint = 0f; // Текущая точка X
-            var curYPoint = 0f + laserOffset; // Текущая точка Y
-
-            if (AppSettings.MillXY0 > 1 && AppSettings.MillXY0 != 3 && AppSettings.MillXY0 != 4) // если выбрана привязка к точкам 1 или 1 и 2
-            {
-                if (AppSettings.MillX1 != 0 && AppSettings.MillY1 != 0) // если есть точка 1
-                {
-                    curXPoint = AppSettings.MillX1; // Текущая точка Х равна точке 1
-                    curYPoint = AppSettings.MillY1 + laserOffset; // Текущая точка Y равна точке 1
-                    if (AppSettings.MillXY0 == 6 || AppSettings.MillXY0 == 8)
-                    {
-                        curYPoint = AppSettings.MillY1 - laserOffset;
-                    }
-                }
-
-                if (AppSettings.MillX2 != 0 && AppSettings.MillY2 != 0) // если есть точка 2
-                {
-                    curXPoint = AppSettings.MillX2; // Текущая точка Х равна точке 2
-                    curYPoint = AppSettings.MillY2 + laserOffset; // Текущая точка Y равна точке 2
-                    if (AppSettings.MillXY0 == 6 || AppSettings.MillXY0 == 8)
-                    {
-                        curYPoint = AppSettings.MillY1 - laserOffset;
-                    }
-                }
-            }
-
-            if (AppSettings.MillXY0 != 0 && AppSettings.MillXY0 != 3) // Если обработка пойдет не от нижнего левого угла
-            {
-                for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // перебираем все объекты
-                {
-                    if (AppSettings.ObjectType[objCur] == 'P' || AppSettings.ObjectType[objCur] == 'L') // и только действительные их них
-                    {
-                        for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // перебираем все поля каждого объекта
-                        {
-                            AppSettings.PolygonX[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.PolyCur] - AppSettings.Point0X; // Смещаем коорждинаты объекта на положение точки =0=
-                            AppSettings.PolygonY[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.PolyCur] - AppSettings.Point0Y; // Смещаем коорждинаты объекта на положение точки =0=
-                        }
-                    }
-                }
-            } // Конец условия если обработка пойдет не от нижнего левого угла
-
-            // теперь идет непосредственно сам вывод координат в файл
-            while (curOperateObject >= 0) // Крутим цикл пока есть хоть один ближайший объект на родительском уровне 0
-            {
-                GetChildList(curOperateObject); // Считываем всех потомков и заносим их в массивчик
-                if (AppSettings.ChildListLen != 0) // Если в массивчике есть объекты
-                {
-                    float curShortestDistance = PointsDistance(0, 0, AppSettings.PolygonMaxX, AppSettings.PolygonMaxY); // текущая наименьшая дистанция
-                    var newShortestDistance = 0f;
-                    for (var objCur = 1; objCur <= AppSettings.ChildListLen; objCur++)
-                    {
-                        newShortestDistance = ShortestDistanceToObject(curXPoint, curYPoint, AppSettings.ChildList[objCur]);
-                        if ((AppSettings.ObjectType[AppSettings.ChildList[objCur]] == 'P' || AppSettings.ObjectType[AppSettings.ChildList[objCur]] == 'L') && newShortestDistance < curShortestDistance)
-                        {
-                            curShortestDistance = newShortestDistance;
-                            curOperateObject = AppSettings.ChildList[objCur]; // Наиближайший объект становится текущим
-                        }
-                    }
-
-                    if (curShortestDistance == PointsDistance(0, 0, AppSettings.PolygonMaxX, AppSettings.PolygonMaxY)) // Если массивчик есть но в нем так и не нашли валидных объектов
-                    {
-                        // то очистим у текущего объекта список его дочерних, т.к. он уже весь отработан.
-                        AppSettings.ObjChilds[curOperateObject] = "";
-                        // и при следующем проходе окажется что массивчика уже нет
-                    }
-                }
-                else // если в массивчике нет объектов
-                {
-                    // выводим тот объект в файл что есть, тоесть текущий
-                    if (AppSettings.ObjectType[curOperateObject] == 'P' || AppSettings.ObjectType[curOperateObject] == 'L') // eсли это действительные объекты
-                    {
-                        RotateBeginOfObjectToPoint(curXPoint, curYPoint, curOperateObject); // Повернем объект ближней точкой к текущей
-                        for (var millZCur = AppSettings.MillZStart; millZCur <= AppSettings.MillZ; millZCur += AppSettings.MillZ1 * -1) // Цикл количества проходов
-                        {
-                            if (millZCur == AppSettings.MillZStart) // первое погружение при многопроходной резке
-                            {
-                                if (AppSettings.MillXY0 == 7 || AppSettings.MillXY0 == 8) // Если по Лазеру и 0 1 2 точкам, то
-                                {
-                                    streamWriter.WriteLine($"{LineNumber()}G00 X={ToNCString(AppSettings.PolygonX[AppSettings.ObjFirst[curOperateObject]])}*#7 Y={ToNCString(AppSettings.PolygonY[AppSettings.ObjFirst[curOperateObject]])}*#8 Z{ToNCString(AppSettings.SafeZ)}\n");
-                                    streamWriter.WriteLine($"{LineNumber()}G01 Z{ToNCString(millZCur)} F{AppSettings.MillFZ}\n");
-                                }
-                                else // если просто тогда
-                                {
-                                    streamWriter.WriteLine($"{LineNumber()}G00 X{ToNCString(AppSettings.PolygonX[AppSettings.ObjFirst[curOperateObject]])} Y{ToNCString(AppSettings.PolygonY[AppSettings.ObjFirst[curOperateObject]])} Z{ToNCString(AppSettings.SafeZ)}\n");
-                                    streamWriter.WriteLine($"{LineNumber()}G01 Z{ToNCString(millZCur)} F{AppSettings.MillFZ}\n");
-                                }
-                            }
-                            else // не первое погружение при мнопрохододовом режиме
-                            {
-                                streamWriter.WriteLine($"{LineNumber()}G01 Z{ToNCString(millZCur)} F{AppSettings.MillFZ}\n");
-                            }
-
-                            for (AppSettings.PolyCur = AppSettings.ObjFirst[curOperateObject] + 1; AppSettings.PolyCur <= AppSettings.ObjLast[curOperateObject]; AppSettings.PolyCur++) // проходим по всем строкам начиная со второй
-                            {
-                                if (AppSettings.PolyCur == (AppSettings.ObjFirst[curOperateObject] + 1)) // если это первая строка
-                                {
-                                    if (AppSettings.MillXY0 == 7 || AppSettings.MillXY0 == 8) // Если по Лазеру и 0 1 2 точкам, то
-                                    {
-                                        streamWriter.WriteLine($"{LineNumber()}G01 X={ToNCString(AppSettings.PolygonX[AppSettings.PolyCur])}*#7 Y={ToNCString(AppSettings.PolygonY[AppSettings.PolyCur])}*#8 F{ToNCString(AppSettings.MillF)}\n"); // то дописываем еще в конце подачу
-                                    }
-                                    else // если просто тогда
-                                    {
-                                        streamWriter.WriteLine($"{LineNumber()}G01 X{ToNCString(AppSettings.PolygonX[AppSettings.PolyCur])} Y{ToNCString(AppSettings.PolygonY[AppSettings.PolyCur])} F{ToNCString(AppSettings.MillF)}\n"); // то дописываем еще в конце подачу
-                                    }
-                                }
-                                else
-                                {
-                                    if (AppSettings.MillXY0 == 7 || AppSettings.MillXY0 == 8) // Если по Лазеру и 0 1 2 точкам, то
-                                    {
-                                        streamWriter.WriteLine($"{LineNumber()}X={ToNCString(AppSettings.PolygonX[AppSettings.PolyCur])}*#7 Y={ToNCString(AppSettings.PolygonY[AppSettings.PolyCur])}*#8\n"); // просто бежим по значениям
-                                    }
-                                    else // если просто тогда
-                                    {
-                                        streamWriter.WriteLine($"{LineNumber()}X{ToNCString(AppSettings.PolygonX[AppSettings.PolyCur])} Y{ToNCString(AppSettings.PolygonY[AppSettings.PolyCur])}\n"); // просто бежим по значениям
-                                    }
-                                }
-                            } // конец вывода в файл всех строк объекта
-
-                            if (AppSettings.ObjectType[curOperateObject] == 'P') // если текущий объект был закрытым
-                            {
-                                // то дописываем в конце еще раз первую строку чтобы его закрыть
-                                if (AppSettings.MillXY0 == 7 || AppSettings.MillXY0 == 8) // Если по Лазеру и 0 1 2 точкам, то
-                                {
-                                    streamWriter.WriteLine($"{LineNumber()}X={ToNCString(AppSettings.PolygonX[AppSettings.ObjFirst[curOperateObject]])}*#7 Y={ToNCString(AppSettings.PolygonY[AppSettings.ObjFirst[curOperateObject]])}*#8\n");
-                                }
-                                else // если просто тогда
-                                {
-                                    streamWriter.WriteLine($"{LineNumber()}X{ToNCString(AppSettings.PolygonX[AppSettings.ObjFirst[curOperateObject]])} Y{ToNCString(AppSettings.PolygonY[AppSettings.ObjFirst[curOperateObject]])}\n");
-                                }
-                            } // конец проверки закрытости объекта
-                        } // конец цикла количества проходов
-                    } // конец проверки действительности объекта
-
-                    AppSettings.ObjectType[curOperateObject] = 'N';
-                    curXPoint = AppSettings.PolygonX[AppSettings.ObjFirst[curOperateObject]]; // Текущая точка Х
-                    curYPoint = AppSettings.PolygonY[AppSettings.ObjFirst[curOperateObject]]; // Текущая точка Y
-                    curOperateObject = AppSettings.ObjParent[curOperateObject]; // Перейдем к вышестоящему обекту
-                } // конец проверки массивчика на наличие в нем объектов
-            }
-
-            // финальные строки NC файла
-            streamWriter.WriteLine($"{LineNumber()}G00 Z{ToNCString(AppSettings.SafeZ)}\n"); // поднимаем фрезу
-            streamWriter.WriteLine($"{LineNumber()}M05 M09\n"); // остановка шпинделя и охлаждения
-            if (AppSettings.MillXY0 == 6 || AppSettings.MillXY0 == 8) // Если был переворот по оси Y
-            {
-                streamWriter.WriteLine($"{LineNumber()}G00 X0.000 Y-{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // возвращение в начало
-            }
-            else if (AppSettings.MillXY0 == 7) // По лазеру и точкам 0, 1 и 2
-            {
-                streamWriter.WriteLine($"{LineNumber()}G00 X0.000 Y{ToNCString(AppSettings.PolygonMaxY + laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // возвращение в начало
-            }
-            else // если не было переворота
-            {
-                streamWriter.WriteLine($"{LineNumber()}G00 X0.000 Y{ToNCString(laserOffset)} Z{ToNCString(AppSettings.SafeZ)}\n"); // возвращение в начало
-            }
-
-            streamWriter.WriteLine($"{LineNumber()}M30\n");
-            streamWriter.WriteLine($"{LineNumber()}'-= Created by <{AppSettings.ProgName} {AppSettings.Version}> =-\n");
-            streamWriter.Close();
-            AppSettings.MillZStart = Convert.ToSingle(TrimFormat09(StartZTextBox.Text));
-            AppSettings.MillZ1 = Convert.ToSingle(TrimFormat09(PassTextBox.Text));
-            AppSettings.MillZ = Convert.ToSingle(TrimFormat09(ResultZTextBox.Text));
-            DebugTextBox.Text += $"Закрыт: {AppSettings.SaveDirectory}\\{AppSettings.FileName}.{iRand}.g \n";
-            DebugTextBox.Text += $"Закрыт: {AppSettings.OpenDirectory}\\{AppSettings.FileName}{AppSettings.FileDim}";
-            TextBox18.Text = "";
-            AppSettings.IsFileLoaded = false;
-            App.Current.MainWindow.Title = $"{AppSettings.ProgName} {AppSettings.Version}";
-            FileSaveAndCloseButton.IsEnabled = false;
-            RotateButton.IsEnabled = false;
-            AppSettings.FoundP0 = false;
-            AppSettings.FoundP1 = false;
-            AppSettings.PolyLen = 0; // Длина массива объектов
-        }
+        
 
         private void ReverseLines() // Меняем у всех открытых Объектов направление движения на противоположное
         {
@@ -2005,19 +2050,7 @@ namespace NCMillComposer
             }
         }
 
-        private int GetNumberOfObjectsByRoot(int rootNumber)
-        {
-            var result = 0;
-            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
-            {
-                if (AppSettings.ObjRoot[objCur] == rootNumber && (AppSettings.ObjectType[objCur] == 'P' || AppSettings.ObjectType[objCur] == 'L'))
-                {
-                    result++;
-                }
-            }
-
-            return result;
-        }
+        
 
         private string ToNCLight(float inSingle)
         {

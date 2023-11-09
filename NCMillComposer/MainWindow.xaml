@@ -36,9 +36,9 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <Button x:Name="FileOpenButton" Grid.Row="0" Click="FileOpen_ButtonClick" Content="Открыть" Margin="0,0,0,5"/>
-            <TextBox x:Name="TextBox18" TextAlignment="Left" Grid.Row="1" />
-            <Button x:Name="FileSaveAndCloseButton" Grid.Row="2" Content="Сохранить и закрыть" Margin="0,5,0,0"/>
+            <Button x:Name="FileOpenButton" Grid.Row="0" Click="FileOpenButton_ClickAction" Content="Открыть" Margin="0,0,0,5"/>
+            <TextBox x:Name="FileNameFilterTextBox" TextAlignment="Left" KeyDown="FileNameFilterTextBox_KeyDownAction" Grid.Row="1" />
+            <Button x:Name="FileSaveAndCloseButton" Grid.Row="2" Click="" Content="Сохранить и закрыть" Margin="0,5,0,0"/>
         </Grid>
         <!---->
 
