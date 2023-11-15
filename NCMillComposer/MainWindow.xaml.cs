@@ -36,9 +36,9 @@ namespace NCMillComposer
                 string tempStringLine = "";
                 while (stringCursor <= AppSettings.ObjChilds[objectNumber].Length) // В поисках цифры Перебираем все символы, пока не дойдем до конца строки
                 {
-                    if (AppSettings.ObjChilds[objectNumber].Substring(stringCursor, 1) != " ") // Если считали символ-цифру
+                    if (AppSettings.ObjChilds[objectNumber].Substring(stringCursor - 1, 1) != " ") // Если считали символ-цифру
                     {
-                        tempStringLine += AppSettings.ObjChilds[objectNumber].Substring(stringCursor, 1);
+                        tempStringLine += AppSettings.ObjChilds[objectNumber].Substring(stringCursor - 1, 1);
                         stringCursor++; // переходим на считывание следующего символа из строки
                         continue;
                     }
@@ -429,7 +429,7 @@ namespace NCMillComposer
             }
         }
 
-        private void GetObjColorAsOriented()
+        private void GetObjColorAsOrientated()
         {
             DebugTextBox.Text += "Устанавливаем цвет в соответствии с направлением ...\n";
             for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
@@ -468,7 +468,7 @@ namespace NCMillComposer
             }
         }
 
-        private void AlignAllObjorientation() // Делаем обход всех объектов попутным
+        private void AlignAllObjOrientation() // Делаем обход всех объектов попутным
         {
             DebugTextBox.Text += "Установка направления обхода всех объектов попутным... ";
             var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
@@ -915,13 +915,13 @@ namespace NCMillComposer
 
             FormatArrayPercent(); // Приведение координат всех объектов к нулю в нижнем левом углу
             FindAllObjOrientation(); // Ищем Ориентированную площадь многоугольника всех объектов
-            AlignAllObjorientation(); // Делаем обход всех объектов попутным
+            AlignAllObjOrientation(); // Делаем обход всех объектов попутным
             FindAllPoints(); // Поиск среди объектов точек 0 и 1
             AllObjChildTest(); // Поиск всех дочерних объектов
             FindObjCenterPoint(); // Ищем среднюю точку для всех объектов и их размер
             HiddenSmallObjects(AppSettings.HideSmall); // Скрываем все объекты меньше указанных
             ReverseInnerPolygons(); // Делаем внутренние вложенные нечетные полигоны встречными по отношению к основному движению
-            GetObjColorAsOriented(); // Разукрашиваем объекты в соответствии с направлением
+            GetObjColorAsOrientated(); // Разукрашиваем объекты в соответствии с направлением
             DebugTextBox.Text += "Вывод на экран...";
             Statistic(); // Рассчет суммы длин всех векторов
             DrawOnScreen(); // Вывод на экран объектов по индексу
@@ -1707,301 +1707,6 @@ namespace NCMillComposer
             return result;
         }
 
-        private string TrimFormat09(string frmStringVal)
-        {
-            var result = "";
-            frmStringVal = frmStringVal.Trim();
-            var tmpCur = "";
-            for (var tmpLineNumber = 0; tmpLineNumber < frmStringVal.Length; tmpLineNumber++)
-            {
-                tmpCur = frmStringVal.Substring(tmpLineNumber, 1);
-                if (tmpCur == "-" || tmpCur == "1" || tmpCur == "2" || tmpCur == "3" || tmpCur == "4" || tmpCur == "5" || tmpCur == "6" || tmpCur == "7" || tmpCur == "8" || tmpCur == "9" || tmpCur == "0" || tmpCur == "." || tmpCur == ",")
-                {
-                    result += tmpCur;
-                }
-            }
-
-            result = result.Replace('.', AppSettings.Separator);
-            result = result.Replace(',', AppSettings.Separator);
-            if (result == "" || result == "-" || result == "." || result == ",")
-            {
-                result = "0";
-            }
-
-            if (result.IndexOf(AppSettings.Separator) != -1)
-            {
-                result = result.Substring(0, result.IndexOf(AppSettings.Separator)) + result.Substring(result.IndexOf(AppSettings.Separator) + 1, 3);
-            }
-
-            return result;
-        }
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        private bool SaveIniString(string iniString, string iniValue) // Записываем в строку ини-файла значение
-        {
-            iniValue = iniValue.Replace(',', '.').Trim();
-            var iniArray = new string[1];
-            var iniLineNumber = 0;
-            using (var streamReader = new StreamReader($"{AppSettings.ProgDir}\\settings.ini"))
-            {
-                while (!streamReader.EndOfStream)
-                {
-                    iniLineNumber++;
-                    Array.Resize(ref iniArray, iniLineNumber);
-                    iniArray[iniLineNumber - 1] = streamReader.ReadLine().Trim();
-                }
-            }
-
-            int iniLineMax = iniLineNumber;
-            var iniLineSaved = false;
-            using (var streamWriter = new StreamWriter($"{AppSettings.ProgDir}\\settings.ini"))
-            {
-                for (iniLineNumber = 0; iniLineNumber < iniLineMax; iniLineNumber++)
-                {
-                    if (iniArray[iniLineNumber].Substring(0, iniArray[iniLineNumber].IndexOf(':')) == iniString)
-                    {
-                        streamWriter.WriteLine($"{iniString}: {iniValue}");
-                        iniLineSaved = true;
-                    }
-                    else
-                    {
-                        streamWriter.WriteLine(iniArray[iniLineNumber]);
-                    }
-                }
-
-                if (!iniLineSaved)
-                {
-                    streamWriter.WriteLine($"{iniString}: {iniValue}");
-                }
-            }
-
-            return true;
-        }
-
-        private void ReverseInnerPolygons() // Делаем внутренние вложенные нечетные полигоны встречными по отношению к основному движению
-        {
-            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
-            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
-            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
-            {
-                if (AppSettings.ObjectType[objCur] == 'P' && (AppSettings.ObjRoot[objCur] % 2) != 0) // Если это закрытые объекты с нечетным уровнем вложенности
-                {
-                    if (AppSettings.ObjOrient[objCur] == 1) // Если Обход по часовой стрелке - попутный для фрезы
-                    {
-                        AppSettings.ObjOrient[objCur] = 0; // То делаем его встречным
-                    }
-                    else
-                    {
-                        AppSettings.ObjOrient[objCur] = 1; // Если он был встречным, то делаем его попутным
-                    }
-
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
-                    {
-                        polyXTmp[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
-                        polyYTmp[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
-                    }
-
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
-                    {
-                        AppSettings.PolygonX[AppSettings.PolyCur] = polyXTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
-                        AppSettings.PolygonY[AppSettings.PolyCur] = polyYTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
-                    }
-                }
-            }
-        }
-
-        private void Statistic() // Полная статистика и вывод ее на экран
-        {
-            // Рассчет длин векторов
-            var perimeterFull = 0f; // Длина всех объектов
-            var objectCount = 0; // Количество действительных объектов
-            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
-            {
-                if (AppSettings.ObjectType[objCur] == 'P' || AppSettings.ObjectType[objCur] == 'L')
-                {
-                    objectCount++; // Увеличим количество действительных объектов
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur] + 1; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++)
-                    {
-                        perimeterFull += Convert.ToSingle(Math.Sqrt((AppSettings.PolygonY[AppSettings.PolyCur] - AppSettings.PolygonY[AppSettings.PolyCur - 1]) * (AppSettings.PolygonY[AppSettings.PolyCur] - AppSettings.PolygonY[AppSettings.PolyCur - 1]) + (AppSettings.PolygonX[AppSettings.PolyCur] - AppSettings.PolygonX[AppSettings.PolyCur - 1]) * (AppSettings.PolygonX[AppSettings.PolyCur] - AppSettings.PolygonX[AppSettings.PolyCur - 1])));
-                    }
-
-                    AppSettings.PolyCur--; // вернемся назад на 1 для компенсации цикла
-                    if (AppSettings.ObjectType[objCur] == 'P') // И посчитаем замыкающий вектор еще до кучи
-                    {
-                        perimeterFull += Convert.ToSingle(Math.Sqrt((AppSettings.PolygonY[AppSettings.PolyCur] - AppSettings.PolygonY[AppSettings.ObjFirst[objCur]]) * (AppSettings.PolygonY[AppSettings.PolyCur] - AppSettings.PolygonY[AppSettings.ObjFirst[objCur]]) + (AppSettings.PolygonX[AppSettings.PolyCur] - AppSettings.PolygonX[AppSettings.ObjFirst[objCur]]) * (AppSettings.PolygonX[AppSettings.PolyCur] - AppSettings.PolygonX[AppSettings.ObjFirst[objCur]])));
-                    }
-                }
-            }
-
-            DebugTextBox.Text += $"\n Сводная информация по файлу: {AppSettings.OpenDirectory}\\{AppSettings.FileName}{AppSettings.FileDim} \n";
-            DebugTextBox.Text += $"ВСЕГО: Строк: {AppSettings.PolyLen} Объектов: {objectCount} Суммарная длина всех векторов: {ToNCLight(perimeterFull)} мм или {ToNCLight(perimeterFull / 1000)} метров \n Наружный размер: Ширина: {AppSettings.PolygonMaxX} мм Высота: {AppSettings.PolygonMaxY} мм";
-            if (AppSettings.AutoSizePercent == 1 && AppSettings.PluPercentAuto != 100)
-            {
-                DebugTextBox.Text += $"АВТОМАСШТАБ: {AppSettings.PluPercentAuto}%";
-            }
-        }
-
-        
-
-        private void ReverseLines() // Меняем у всех открытых Объектов направление движения на противоположное
-        {
-            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
-            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
-            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
-            {
-                if (AppSettings.ObjectType[objCur] == 'L') // Если это закрытые объекты
-                {
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
-                    {
-                        polyXTmp[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
-                        polyYTmp[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
-                    }
-
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
-                    {
-                        AppSettings.PolygonX[AppSettings.PolyCur] = polyXTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
-                        AppSettings.PolygonY[AppSettings.PolyCur] = polyYTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
-                    }
-                }
-            }
-        }
-
-        private void ReversePolygons() // Меняем у всех закрытых полигонов направление движения на противоположное
-        {
-            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
-            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
-            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
-            {
-                if (AppSettings.ObjectType[objCur] == 'P') // Если это закрытые объекты
-                {
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
-                    {
-                        polyXTmp[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
-                        polyYTmp[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
-                    }
-
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
-                    {
-                        AppSettings.PolygonX[AppSettings.PolyCur] = polyXTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
-                        AppSettings.PolygonY[AppSettings.PolyCur] = polyYTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
-                    }
-                }
-            }
-        }
-
-        private void ReverseObjects() // Меняем у всех действительных  объектов направление движения на противоположное
-        {
-            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
-            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
-            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
-            {
-                if (AppSettings.ObjectType[objCur] == 'L' || AppSettings.ObjectType[objCur] == 'P') // Если это действительные валидные объекты
-                {
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
-                    {
-                        polyXTmp[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
-                        polyYTmp[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
-                    }
-
-                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
-                    {
-                        AppSettings.PolygonX[AppSettings.PolyCur] = polyXTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
-                        AppSettings.PolygonY[AppSettings.PolyCur] = polyYTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
-                    }
-                }
-            }
-        }
-
-        private string LineNumber()
-        {
-            var result = "";
-            if (AppSettings.GLineNumber == 0)
-            {
-                return result;
-            }
-
-            result = AppSettings.CurrentLineNumber.ToString();
-            if (result.Length < 6)
-            {
-                for (var i = 1; i <= 6 - result.Length; i++)
-                {
-                    result = "0" + result;
-                }
-            }
-
-            AppSettings.CurrentLineNumber++;
-            return $"N{result}   ";
-        }
-
-        private string ToNCString(float inSingle)
-        {
-            var result = "";
-            inSingle = Convert.ToSingle(Math.Round(inSingle, 3));
-            string inString = inSingle.ToString();
-            inString = inString.Replace(',', '.');
-            if (inString.IndexOf('.') == -1)
-            {
-                return inString + ".000";
-            }
-
-            result = result.Substring(0, result.IndexOf("."));
-            int lastLen = inString.Length - inString.IndexOf(".");
-            if (lastLen > 3)
-            {
-                lastLen = 3;
-            }
-
-            for (var i = inString.IndexOf(".") + 1; i <= inString.IndexOf(".") + lastLen; i++)
-            {
-                result += inString.Substring(i, 1);
-            }
-
-            if (lastLen < 3)
-            {
-                result += "0";
-            }
-
-            if (lastLen < 2)
-            {
-                result += "0";
-            }
-
-            return result;
-        }
-
-        private float PointsDistance(float aX, float aY, float bX, float bY)
-        {
-            return Convert.ToSingle(Math.Sqrt((bY - aY) * (bY - aY) + (bX - aX) * (bX - aX)));
-        }
-
-        private float ShortestDistanceToObject(float aX, float aY, int objectNumber)
-        {
-            float result = PointsDistance(aX, aY, AppSettings.PolygonX[AppSettings.ObjFirst[objectNumber]], AppSettings.PolygonY[AppSettings.ObjFirst[objectNumber]]);
-            if (AppSettings.ObjectType[objectNumber] == 'P')
-            {
-                for (var polyCurLine = AppSettings.ObjFirst[objectNumber] + 1; polyCurLine <= AppSettings.ObjLast[objectNumber]; polyCurLine++)
-                {
-                    if (PointsDistance(aX, aY, AppSettings.PolygonX[polyCurLine], AppSettings.PolygonY[polyCurLine]) < result)
-                    {
-                        result = PointsDistance(aX, aY, AppSettings.PolygonX[polyCurLine], AppSettings.PolygonY[polyCurLine]);
-                    }
-                }
-            }
-
-            return result;
-        }
-
         private void RotateBeginOfObjectToPoint(float aX, float aY, int objectNumber)
         {
             // Переворачиваем все строки с координатами объекта таким образом, чтобы ближайшая точка была первой
@@ -2043,14 +1748,34 @@ namespace NCMillComposer
                 polyCurNewLine = 1; // Обнуляем Счетчик строк в новом массиве
                 for (var polyCurLine = AppSettings.ObjFirst[objectNumber]; polyCurLine <= AppSettings.ObjLast[objectNumber]; polyCurLine++) // Переписываем новый массив назад в старый
                 {
-                    polyXTemp[polyCurLine] = AppSettings.PolygonX[polyCurNewLine];
-                    polyYTemp[polyCurLine] = AppSettings.PolygonY[polyCurNewLine];
+                    AppSettings.PolygonX[polyCurLine] = polyXTemp[polyCurNewLine];
+                    AppSettings.PolygonY[polyCurLine] = polyYTemp[polyCurNewLine];
                     polyCurNewLine++; // Увеличиваем счетчик нового архива
                 }
             }
         }
 
-        
+        private float ShortestDistanceToObject(float aX, float aY, int objectNumber)
+        {
+            float result = PointsDistance(aX, aY, AppSettings.PolygonX[AppSettings.ObjFirst[objectNumber]], AppSettings.PolygonY[AppSettings.ObjFirst[objectNumber]]);
+            if (AppSettings.ObjectType[objectNumber] == 'P')
+            {
+                for (var polyCurLine = AppSettings.ObjFirst[objectNumber] + 1; polyCurLine <= AppSettings.ObjLast[objectNumber]; polyCurLine++)
+                {
+                    if (PointsDistance(aX, aY, AppSettings.PolygonX[polyCurLine], AppSettings.PolygonY[polyCurLine]) < result)
+                    {
+                        result = PointsDistance(aX, aY, AppSettings.PolygonX[polyCurLine], AppSettings.PolygonY[polyCurLine]);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private float PointsDistance(float aX, float aY, float bX, float bY)
+        {
+            return Convert.ToSingle(Math.Sqrt((bY - aY) * (bY - aY) + (bX - aX) * (bX - aX)));
+        }
 
         private string ToNCLight(float inSingle)
         {
@@ -2058,12 +1783,47 @@ namespace NCMillComposer
             result = result.Replace(',', '.');
             if (result.IndexOf('.') != -1)
             {
-                result = result.Substring(0, result.IndexOf('.')) + result.Substring(result.IndexOf(".") + 1, 3);
+                result = result.Substring(0, result.IndexOf('.')) + result.Substring(result.IndexOf("."), 4);
             }
 
             return result;
         }
 
+        private string ToNCString(float inSingle)
+        {
+            var result = "";
+            inSingle = Convert.ToSingle(Math.Round(inSingle, 3));
+            var inString = inSingle.ToString();
+            inString = inString.Replace(',', '.');
+            if (inString.IndexOf('.') == -1)
+            {
+                return result + ".000";
+            }
+
+            result = inString.Substring(0, inString.IndexOf(".") + 1);
+            int lastLen = inString.Length - inString.IndexOf(".") - 1;
+            if (lastLen > 3)
+            {
+                lastLen = 3;
+            }
+
+            for (var i = inString.IndexOf(".") + 1; i <= inString.IndexOf(".") + lastLen; i++)
+            {
+                result += inString.Substring(i, 1);
+            }
+
+            if (lastLen < 3)
+            {
+                result += "0";
+            }
+
+            if (lastLen < 2)
+            {
+                result += "0";
+            }
+
+            return result;
+        }
 
         private void OnLoad(object sender, RoutedEventArgs e)
         {
@@ -2507,6 +2267,83 @@ namespace NCMillComposer
             return result;
         }
 
+        private bool SaveIniString(string iniString, string iniValue) // Записываем в строку ини-файла значение
+        {
+            iniValue = iniValue.Replace(',', '.').Trim();
+            var iniArray = new string[2];
+            var iniLineNumber = 0;
+            using (var streamReader = new StreamReader($"{AppSettings.ProgDir}\\settings.ini"))
+            {
+                while (!streamReader.EndOfStream)
+                {
+                    iniLineNumber++;
+                    Array.Resize(ref iniArray, iniLineNumber + 1);
+                    iniArray[iniLineNumber] = streamReader.ReadLine().Trim();
+                }
+            }
+
+            int iniLineMax = iniLineNumber;
+            var iniLineSaved = false;
+            using (var streamWriter = new StreamWriter($"{AppSettings.ProgDir}\\settings.ini"))
+            {
+                for (iniLineNumber = 1; iniLineNumber <= iniLineMax; iniLineNumber++)
+                {
+                    if (iniArray[iniLineNumber].Substring(0, iniArray[iniLineNumber].IndexOf(':')) == iniString)
+                    {
+                        streamWriter.WriteLine($"{iniString}: {iniValue}");
+                        iniLineSaved = true;
+                    }
+                    else
+                    {
+                        streamWriter.WriteLine(iniArray[iniLineNumber]);
+                    }
+                }
+
+                if (!iniLineSaved)
+                {
+                    streamWriter.WriteLine($"{iniString}: {iniValue}");
+                }
+            }
+
+            return true;
+        }
+
+        private string TrimFormat09(string frmStringVal)
+        {
+            var result = "";
+            frmStringVal = frmStringVal.Trim();
+            var tmpCur = "";
+            for (var tmpLineNumber = 0; tmpLineNumber < frmStringVal.Length; tmpLineNumber++)
+            {
+                tmpCur = frmStringVal.Substring(tmpLineNumber, 1);
+                if (tmpCur == "-" || tmpCur == "1" || tmpCur == "2" || tmpCur == "3" || tmpCur == "4" || tmpCur == "5" || tmpCur == "6" || tmpCur == "7" || tmpCur == "8" || tmpCur == "9" || tmpCur == "0" || tmpCur == "." || tmpCur == ",")
+                {
+                    result += tmpCur;
+                }
+            }
+
+            result = result.Replace('.', AppSettings.Separator);
+            result = result.Replace(',', AppSettings.Separator);
+            if (result == "" || result == "-" || result == "." || result == ",")
+            {
+                result = "0";
+            }
+
+            if (result.IndexOf(AppSettings.Separator) != -1)
+            {
+                string temp = result.Substring(result.IndexOf(AppSettings.Separator) + 1);
+                result = result.Substring(0, result.IndexOf(AppSettings.Separator) + 1);
+                result += temp.Length > 3 ? temp.Substring(0, 3) : temp;
+            }
+
+            return result;
+        }
+
+        private void DebugTextBox_FocusAction(object sender, RoutedEventArgs e)
+        {
+            FileOpenButton.Focus();
+        }
+
         private void AnyChanges() // Полное сохранение переформатирование и сохранение всех полей ввода одним махом
         {
             // Начальная глубина обработки
@@ -2548,7 +2385,7 @@ namespace NCMillComposer
                 AppSettings.MillX1 = AppSettings.PolygonMaxX - AppSettings.Point0X;
             }
 
-            if (AppSettings.MillX1 < 0 - AppSettings.Point0X)
+            if (AppSettings.MillX1 < (0 - AppSettings.Point0X))
             {
                 AppSettings.MillX1 = 0 - AppSettings.Point0X;
             }
@@ -2558,11 +2395,29 @@ namespace NCMillComposer
                 AppSettings.FoundP1 = true;
             }
 
+            Point1XTextBox.Text = TrimFormat09(AppSettings.MillX1.ToString());
+            // координаты точки 1 по Y - несохраняемое значение - не выходит за края максимальных значений
+            AppSettings.MillY1 = Convert.ToSingle(TrimFormat09(Point1YTextBox.Text));
+            if (AppSettings.MillY1 > AppSettings.PolygonMaxY - AppSettings.Point0Y)
+            {
+                AppSettings.MillY1 = AppSettings.PolygonMaxY - AppSettings.Point0Y;
+            }
+
+            if (AppSettings.MillY1 < (0 - AppSettings.Point0Y))
+            {
+                AppSettings.MillY1 = 0 - AppSettings.Point0Y;
+            }
+
+            if (AppSettings.MillY1 != 0)
+            {
+                AppSettings.FoundP1 = true;
+            }
+
             Point1YTextBox.Text = TrimFormat09(AppSettings.MillY1.ToString());
             // Если точка 1 в нуле - тогда поля делаем пустыми
             if ((AppSettings.MillX1 + AppSettings.Point0X) == AppSettings.Point0X && (AppSettings.MillY1 + AppSettings.Point0Y) == AppSettings.Point0Y)
             {
-                AppSettings.FoundP0 = false;
+                AppSettings.FoundP1 = false;
                 Point1XTextBox.Text = "";
                 Point1YTextBox.Text = "";
                 Point2XTextBox.Text = "";
@@ -2589,7 +2444,7 @@ namespace NCMillComposer
             Point2XTextBox.Text = TrimFormat09(AppSettings.MillX2.ToString());
             // координаты точки 2 по Y - несохраняемое значение - не выходит за края максимальных значений
             AppSettings.MillY2 = Convert.ToSingle(TrimFormat09(Point2YTextBox.Text));
-            if (AppSettings.MillY2 > (AppSettings.PolygonMaxX - AppSettings.Point0Y))
+            if (AppSettings.MillY2 > (AppSettings.PolygonMaxY - AppSettings.Point0Y))
             {
                 AppSettings.MillY2 = AppSettings.PolygonMaxY - AppSettings.Point0Y;
             }
@@ -2662,7 +2517,7 @@ namespace NCMillComposer
                 FileSaveAndCloseButton.IsEnabled = false;
             }
 
-            if (AppSettings.SafeZ > 0 && AppSettings.IsFileLoaded == true)
+            if (AppSettings.SafeZ > 0 && AppSettings.IsFileLoaded)
             {
                 FileSaveAndCloseButton.IsEnabled = true; // и соответсвенно включим, если указана высота безопасности и файл загружен
             }
@@ -2712,6 +2567,636 @@ namespace NCMillComposer
 
             ScaleTextBox.Text = AppSettings.PluPercent.ToString() + "%";
             SaveIniString("PluPercent", AppSettings.PluPercent.ToString());
+        }
+
+        private void ChangeFocusToFileOpenButton_KeyDownAction(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                FileOpenButton.Focus();
+            }
+        }
+
+        private void ChangeFocusToPassTextBox_KeyDownAction(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                PassTextBox.Focus();
+            }
+        }
+
+        private void ChangeFocusToResultZTextBox_KeyDownAction(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                ResultZTextBox.Focus();
+            }
+        }
+
+        private void ChangeFocusToPoint1YTextBox_KeyDownAction(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                Point1YTextBox.Focus();
+            }
+        }
+
+        private void ChangeFocusToPoint2XTextBox_KeyDownAction(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                Point2XTextBox.Focus();
+            }
+        }
+
+        private void ChangeFocusToPoint2YTextBox_KeyDownAction(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                Point2YTextBox.Focus();
+            }
+        }
+
+        private void ChangeFocusToMillDTextBoxOrMillTextBox_KeyDownAction(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                if (MillDTextBox.IsEnabled)
+                {
+                    MillDTextBox.Focus();
+                    return;
+                }
+
+                MillTextBox.Focus();
+            }
+        }
+
+        private void ChangeFocusToMillTextBox_KeyDownAction(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                MillTextBox.Focus();
+            }
+        }
+
+        private void ChangeFocusToMinZTextBox_KeyDownAction(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Space)
+            {
+                e.Handled = true;
+                MinZTextBox.Focus();
+            }
+        }
+
+        private void ScaleAutoCheckBox_CheckedChangedAction(object sender, RoutedEventArgs e)
+        {
+            // обработчик чекбокса с Автомасштабом
+            if (ScaleAutoCheckBox.IsChecked == true)
+            {
+                AppSettings.AutoSizePercent = 1;
+                AppSettings.PluPercent = 100;
+                ScaleTextBox.IsEnabled = false; // Отключим редактирование процентов
+            }
+
+            if (ScaleAutoCheckBox.IsChecked == false)
+            {
+                AppSettings.AutoSizePercent = 0;
+                ScaleTextBox.IsEnabled = true; // Включим редактирование процентов
+            }
+
+            SaveIniString("AutoSizePercent", AppSettings.AutoSizePercent.ToString());
+            SaveIniString("PluPercent", AppSettings.PluPercent.ToString());
+            ScaleTextBox_LeaveAction(sender, e);
+            FileOpenButton.Focus();
+        }
+
+        private void TextBox_LeaveAction(object sender, RoutedEventArgs e)
+        {
+            AnyChanges();
+        }
+
+        private void TextBox_LeaveWithReDrawAction(object sender, RoutedEventArgs e)
+        {
+            AnyChanges();
+            DrawOnScreen();
+        }
+
+        private void HideTextBox_LeaveAction(object sender, RoutedEventArgs e)
+        {
+            AnyChanges();
+            HiddenSmallObjects(AppSettings.HideSmall); // Скрываем все объекты меньше указанных
+            if (AppSettings.IsFileLoaded)
+            {
+                Statistic(); // Рассчет суммы длин всех векторов
+            }
+
+            DrawOnScreen();
+        }
+
+        private void ScaleTextBox_LeaveAction(object sender, RoutedEventArgs e)
+        {
+            AnyChanges();
+            if (AppSettings.AutoSizePercent != 1) // Если отключен автомасштаб, то принудительно задаем значение!
+            {
+                AppSettings.PluPercentAuto = AppSettings.PluPercent; // Меняем масштаб! Мы же пляшем от автомасштаба...
+            }
+
+            if (AppSettings.IsFileLoaded)
+            {
+                DebugTextBox.Text += $"\n\nПерезагружается файл: {AppSettings.OpenDirectory}\\{AppSettings.FileName}{AppSettings.FileDim}\n";
+                readFilePLT(); // Открываем, считываем все вектора в массив и закрываем файл
+                FormatArrayLP(); // Поиск открытых и закрытых объектов
+                AppSettings.ConnectCount = 1; // Устанавливаем счетчик соединений, чтобы запустить первый проход
+                while (AppSettings.ConnectCount != 0)
+                {
+                    FormatArrayConnect(); // Находим и соединяем вектора разных объектов в один
+                    FormatArrayLP(); // Поиск открытых и закрытых объектов
+                    FormatArrayDefrag(); // Дефрагментация и упорядочивание массива объектов
+                }
+
+                FormatArrayPercent(); // Приведение координат всех объектов к нулю в нижнем левом углу
+                FindAllObjOrientation(); // Ищем Ориентированную площадь многоугольника всех объектов
+                AlignAllObjOrientation(); // Делаем обход всех объектов попутным
+                FindAllPoints(); // Поиск среди объектов точек 0 и 1
+                AllObjChildTest(); // Поиск всех дочерних объектов
+                FindObjCenterPoint(); // Ищем среднюю точку для всех объектов и их размер
+                HiddenSmallObjects(AppSettings.HideSmall); // Скрываем все объекты меньше указанных
+                ReverseInnerPolygons(); // Делаем внутренние вложенные нечетные полигоны встречными по отношению к основному движению
+                GetObjColorAsOrientated(); // Разукрашиваем объекты в соответствии с направлением
+                DebugTextBox.Text += "Вывод на экран...";
+                Statistic(); // Рассчет суммы длин всех векторов
+                DrawOnScreen(); // Вывод на экран объектов по индексу
+            }
+        }
+
+        private void Point1TextBox_MouseDoubleClickAction(object sender, MouseButtonEventArgs e)
+        {
+            // Двойной щелчек по полям точки 1 - меняет между собой точки 1 и 0 или восстанавливает значение точки 1 если было введено вручную.
+            if (AppSettings.FoundP0 && AppSettings.Point1X != 0 && AppSettings.Point1Y != 0) // если в файле были найдены обе точки
+            {
+                if (Math.Round(AppSettings.MillX1) == Math.Round(AppSettings.Point1X - AppSettings.Point0X) && Math.Round(AppSettings.MillY1) == Math.Round(AppSettings.Point1Y - AppSettings.Point0Y)) // Если точка 1 не изменена вручную и есть та которая и есть
+                {
+                    // меняем местами точки 1 и 0
+                    AppSettings.MillX1 = AppSettings.Point0X; // сохраним здесь значение
+                    AppSettings.MillY1 = AppSettings.Point0Y; // сохраним здесь значение
+                    AppSettings.Point0X = AppSettings.Point1X; // поменяем местами
+                    AppSettings.Point0Y = AppSettings.Point1Y; // поменяем местами
+                    AppSettings.Point1X = AppSettings.MillX1; // попользуем сохраненное значение
+                    AppSettings.Point1Y = AppSettings.MillY1; // попользуем сохраненное значение
+                    AppSettings.MillX1 = AppSettings.Point1X - AppSettings.Point0X; // Получим относительное значение для первой точки по X
+                    AppSettings.MillY1 = AppSettings.Point1Y - AppSettings.Point0Y; // Получим относительное значение для первой точки по Y
+                    Point1XTextBox.Text = TrimFormat09(AppSettings.MillX1.ToString());
+                    Point1YTextBox.Text = TrimFormat09(AppSettings.MillY1.ToString());
+                    if (AppSettings.FoundP2)
+                    {
+                        AppSettings.MillX2 = AppSettings.Point2X - AppSettings.Point0X; // Получим относительное значение для точки 2 по X
+                        AppSettings.MillY2 = AppSettings.Point2Y - AppSettings.Point0Y; // Получим относительное значение для точки 2 по Y
+                        Point2XTextBox.Text = TrimFormat09(AppSettings.MillX2.ToString());
+                        Point2YTextBox.Text = TrimFormat09(AppSettings.MillY2.ToString());
+                    }
+
+                    AppSettings.FoundP1 = true;
+                    FileOpenButton.Focus();
+                }
+                else // восстановим значение точки 1
+                {
+                    AppSettings.MillX1 = AppSettings.Point1X - AppSettings.Point0X; // Получим относительное значение для первой точки по X
+                    AppSettings.MillY1 = AppSettings.Point1Y - AppSettings.Point0Y; // Получим относительное значение для первой точки по Y
+                    Point1XTextBox.Text = TrimFormat09(AppSettings.MillX1.ToString());
+                    Point1YTextBox.Text = TrimFormat09(AppSettings.MillY1.ToString());
+                    if (AppSettings.FoundP2)
+                    {
+                        AppSettings.MillX2 = AppSettings.Point2X - AppSettings.Point0X; // Получим относительное значение для точки 2 по X
+                        AppSettings.MillY2 = AppSettings.Point2Y - AppSettings.Point0Y; // Получим относительное значение для точки 2 по Y
+                        Point2XTextBox.Text = TrimFormat09(AppSettings.MillX2.ToString());
+                        Point2YTextBox.Text = TrimFormat09(AppSettings.MillY2.ToString());
+                    }
+
+                    AppSettings.FoundP1 = true;
+                    FileOpenButton.Focus();
+                }
+            }
+            else
+            {
+                AppSettings.MillX1 = 0; // сотрем точку 1
+                AppSettings.MillY1 = 0;
+                AppSettings.MillX2 = 0; // сотрем точку 2
+                AppSettings.MillY2 = 0;
+                AppSettings.FoundP1 = false;
+                AppSettings.FoundP2 = false;
+                Point1XTextBox.Text = "";
+                Point1YTextBox.Text = "";
+                FileOpenButton.Focus();
+            }
+        }
+
+        private void Point2TextBox_MouseDoubleClickAction(object sender, MouseButtonEventArgs e)
+        {
+            // Двойной щелчек по полям точки 2 - меняет между собой точки 1 и 0 или восстанавливает значение точки 2 если было введено вручную.
+            if (AppSettings.FoundP0 && AppSettings.FoundP1 && AppSettings.Point1X != 0 && AppSettings.Point1Y != 0 && AppSettings.Point2Y != 0) // если в файле были найдены все точки
+            {
+                if (Math.Round(AppSettings.MillX2) == Math.Round(AppSettings.Point2X - AppSettings.Point0X) && Math.Round(AppSettings.MillY2) == Math.Round(AppSettings.Point2Y - AppSettings.Point0Y)) // Если точка 2 не изменена вручную и есть та которая и есть
+                {
+                    // меняем местами точки 1 и 0
+                    AppSettings.MillX2 = AppSettings.Point1X; // сохраним здесь значение
+                    AppSettings.MillY2 = AppSettings.Point1Y; // сохраним здесь значение
+                    AppSettings.Point1X = AppSettings.Point2X; // поменяем местами
+                    AppSettings.Point1Y = AppSettings.Point2Y; // поменяем местами
+                    AppSettings.Point2X = AppSettings.MillX2; // попользуем сохраненное значение
+                    AppSettings.Point2Y = AppSettings.MillY2; // попользуем сохраненное значение
+                    AppSettings.MillX1 = AppSettings.Point1X - AppSettings.Point0X; // Получим относительное значение для первой точки по X
+                    AppSettings.MillY1 = AppSettings.Point1Y - AppSettings.Point0Y; // Получим относительное значение для первой точки по Y
+                    AppSettings.MillX2 = AppSettings.Point2X - AppSettings.Point0X; // Получим относительное значение для точки 2 по X
+                    AppSettings.MillY2 = AppSettings.Point2Y - AppSettings.Point0Y; // Получим относительное значение для точки 2 по Y
+                    Point1XTextBox.Text = TrimFormat09(AppSettings.MillX1.ToString());
+                    Point1YTextBox.Text = TrimFormat09(AppSettings.MillY1.ToString());
+                    Point2XTextBox.Text = TrimFormat09(AppSettings.MillX2.ToString());
+                    Point2YTextBox.Text = TrimFormat09(AppSettings.MillY2.ToString());
+                    AppSettings.FoundP2 = true;
+                    FileOpenButton.Focus();
+                }
+                else // восстановим значение точки 2
+                {
+                    AppSettings.MillX2 = AppSettings.Point2X - AppSettings.Point0X; // Получим относительное значение для первой точки по X
+                    AppSettings.MillY2 = AppSettings.Point2Y - AppSettings.Point0Y; // Получим относительное значение для первой точки по Y
+                    Point2XTextBox.Text = TrimFormat09(AppSettings.MillX2.ToString());
+                    Point2YTextBox.Text = TrimFormat09(AppSettings.MillY2.ToString());
+                    AppSettings.FoundP2 = true;
+                    FileOpenButton.Focus();
+                }
+            }
+            else
+            {
+                AppSettings.MillX2 = 0; // сотрем точку 2
+                AppSettings.MillY2 = 0;
+                AppSettings.FoundP2 = false;
+                Point2XTextBox.Text = "";
+                Point2YTextBox.Text = "";
+                FileOpenButton.Focus();
+            }
+        }
+
+        private void CloseVectorProcessingCombobox1_SelectionChangedAction(object sender, SelectionChangedEventArgs e)
+        {
+            AppSettings.MillVectClose1 = Convert.ToInt16(CloseVectorProcessingCombobox1.SelectedIndex);
+            SaveIniString("MillVectClose1", AppSettings.MillVectClose1.ToString());
+            if (AppSettings.IsFileLoaded)
+            {
+                GetObjColorAsOrientated(); // Разукрашиваем объекты в соответствии с направлением
+                DebugTextBox.Text += "Вывод на экран...";
+                Statistic(); // Рассчет суммы длин всех векторов
+                DrawOnScreen(); // Вывод на экран объектов по индексу
+            }
+
+            FileOpenButton.Focus();
+        }
+
+        private void OpenVectorsCombobox_SelectionChangedAction(object sender, SelectionChangedEventArgs e)
+        {
+            AppSettings.MillVectOpen = Convert.ToInt16(OpenVectorsCombobox.SelectedIndex);
+            SaveIniString("MillVectOpen", AppSettings.MillVectOpen.ToString());
+            if (AppSettings.IsFileLoaded)
+            {
+                GetObjColorAsOrientated(); // Разукрашиваем объекты в соответствии с направлением
+                DebugTextBox.Text += "Вывод на экран...";
+                Statistic(); // Рассчет суммы длин всех векторов
+                DrawOnScreen(); // Вывод на экран объектов по индексу
+            }
+
+            FileOpenButton.Focus();
+        }
+
+        private void CloseVectorProcessingCombobox2_SelectionChangedAction(object sender, SelectionChangedEventArgs e)
+        {
+            AppSettings.MillVectClose2 = Convert.ToInt16(CloseVectorProcessingCombobox2.SelectedIndex);
+            SaveIniString("MillVectClose2", AppSettings.MillVectClose2.ToString());
+            FileOpenButton.Focus();
+        }
+
+        private void PointsBindingCombobox_SelectionChangedAction(object sender, SelectionChangedEventArgs e)
+        {
+            AppSettings.MillXY0 = Convert.ToInt16(PointsBindingCombobox.SelectedIndex);
+            SaveIniString("MillXY0", AppSettings.MillXY0.ToString());
+            if (AppSettings.MillXY0 < 3)
+            {
+                LaserYTextBox.IsEnabled = false; // Лазер отключен
+            }
+            else
+            {
+                LaserYTextBox.IsEnabled = true; // Если значение 3 и больше то лазер включен
+            }
+
+            if (AppSettings.MillXY0 == 0 || AppSettings.MillXY0 == 1 || AppSettings.MillXY0 == 3 || AppSettings.MillXY0 == 4)
+            {
+                Point1XTextBox.IsEnabled = false; // Отключаем точку 1, если 0, 1, 3, 4
+                Point1YTextBox.IsEnabled = false;
+            }
+            else
+            {
+                Point1XTextBox.IsEnabled = true; // В противном случае включаем точку 1
+                Point1YTextBox.IsEnabled = true;
+            }
+
+            if (AppSettings.MillXY0 < 7)
+            {
+                Point2XTextBox.IsEnabled = false; // Отключаем точку 2, если меньше 7
+                Point2YTextBox.IsEnabled = false;
+            }
+            else
+            {
+                Point2XTextBox.IsEnabled = true; // В противном случае включаем точку 2
+                Point2YTextBox.IsEnabled = true;
+            }
+
+            FileOpenButton.Focus();
+        }
+
+        private void Folder_ncButton_ClickAction(object sender, RoutedEventArgs e)
+        {
+            // Выбор папки для сохранения
+            var folderPickerDialog = new System.Windows.Forms.FolderBrowserDialog()
+            {
+                Description = AppSettings.SaveDialogTitle,
+                UseDescriptionForTitle = true,
+                SelectedPath = AppSettings.SaveDirectory
+            };
+
+            if (folderPickerDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                AppSettings.SaveDirectory = folderPickerDialog.SelectedPath;
+                SaveIniString("SaveDir", AppSettings.SaveDirectory);
+            }
+        }
+
+        private void Folder1Button_ClickAction(object sender, RoutedEventArgs e)
+        {
+            // Выбор папки для сохранения
+            var folderPickerDialog = new System.Windows.Forms.FolderBrowserDialog()
+            {
+                Description = AppSettings.OpenDir1Title,
+                UseDescriptionForTitle = true,
+                SelectedPath = AppSettings.OpenDir1
+            };
+
+            if (folderPickerDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                AppSettings.OpenDir1 = folderPickerDialog.SelectedPath;
+                SaveIniString("OpenDir1", AppSettings.OpenDir1);
+            }
+        }
+
+        private void Folder2Button_ClickAction(object sender, RoutedEventArgs e)
+        {
+            // Выбор папки для сохранения
+            var folderPickerDialog = new System.Windows.Forms.FolderBrowserDialog()
+            {
+                Description = AppSettings.OpenDir2Title,
+                UseDescriptionForTitle = true,
+                SelectedPath = AppSettings.OpenDir2
+            };
+
+            if (folderPickerDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                AppSettings.OpenDir2 = folderPickerDialog.SelectedPath;
+                SaveIniString("OpenDir2", AppSettings.OpenDir2);
+            }
+        }
+
+        private void Canvas_SizeChangedAction(object sender, SizeChangedEventArgs e)
+        {
+            if (AppSettings.IsFileLoaded)
+            {
+                DrawOnScreen();
+            }
+        }
+
+        private void DebugTextBox_MouseDoubleClickAction(object sender, MouseButtonEventArgs e)
+        {
+            if (!AppSettings.IsFileLoaded)
+            {
+                DebugTextBox.Text += "\nWritten by Dmitry Shelekhov +74952492981 +375295611611 info@StendyInfo.RU\nSupported by Kirill Nesterovich +375293113500 Telegram: @NestorsX";
+                return;
+            }
+
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // по двойному щелчку на самой форме меняем цвет объектов
+            {
+                AppSettings.ObjectColor[objCur] = -1;
+            }
+
+            GetObjRandomColor();
+            DrawOnScreen();
+        }
+
+        private void Statistic() // Полная статистика и вывод ее на экран
+        {
+            // Рассчет длин векторов
+            var perimeterFull = 0f; // Длина всех объектов
+            var objectCount = 0; // Количество действительных объектов
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
+            {
+                if (AppSettings.ObjectType[objCur] == 'P' || AppSettings.ObjectType[objCur] == 'L')
+                {
+                    objectCount++; // Увеличим количество действительных объектов
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur] + 1; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++)
+                    {
+                        perimeterFull += Convert.ToSingle(Math.Sqrt((AppSettings.PolygonY[AppSettings.PolyCur] - AppSettings.PolygonY[AppSettings.PolyCur - 1]) * (AppSettings.PolygonY[AppSettings.PolyCur] - AppSettings.PolygonY[AppSettings.PolyCur - 1]) + (AppSettings.PolygonX[AppSettings.PolyCur] - AppSettings.PolygonX[AppSettings.PolyCur - 1]) * (AppSettings.PolygonX[AppSettings.PolyCur] - AppSettings.PolygonX[AppSettings.PolyCur - 1])));
+                    }
+
+                    AppSettings.PolyCur--; // вернемся назад на 1 для компенсации цикла
+                    if (AppSettings.ObjectType[objCur] == 'P') // И посчитаем замыкающий вектор еще до кучи
+                    {
+                        perimeterFull += Convert.ToSingle(Math.Sqrt((AppSettings.PolygonY[AppSettings.PolyCur] - AppSettings.PolygonY[AppSettings.ObjFirst[objCur]]) * (AppSettings.PolygonY[AppSettings.PolyCur] - AppSettings.PolygonY[AppSettings.ObjFirst[objCur]]) + (AppSettings.PolygonX[AppSettings.PolyCur] - AppSettings.PolygonX[AppSettings.ObjFirst[objCur]]) * (AppSettings.PolygonX[AppSettings.PolyCur] - AppSettings.PolygonX[AppSettings.ObjFirst[objCur]])));
+                    }
+                }
+            }
+
+            DebugTextBox.Text += $"\nСводная информация по файлу: {AppSettings.OpenDirectory}\\{AppSettings.FileName}{AppSettings.FileDim} \n";
+            DebugTextBox.Text += $"ВСЕГО: Строк: {AppSettings.PolyLen} Объектов: {objectCount} Суммарная длина всех векторов: {ToNCLight(perimeterFull)} мм или {ToNCLight(perimeterFull / 1000)} метров \n Наружный размер: Ширина: {AppSettings.PolygonMaxX} мм Высота: {AppSettings.PolygonMaxY} мм";
+            if (AppSettings.AutoSizePercent == 1 && AppSettings.PluPercentAuto != 100)
+            {
+                DebugTextBox.Text += $"АВТОМАСШТАБ: {AppSettings.PluPercentAuto}%";
+            }
+        }
+
+        private void ReverseInnerPolygons() // Делаем внутренние вложенные нечетные полигоны встречными по отношению к основному движению
+        {
+            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
+            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
+            {
+                if (AppSettings.ObjectType[objCur] == 'P' && (AppSettings.ObjRoot[objCur] % 2) != 0) // Если это закрытые объекты с нечетным уровнем вложенности
+                {
+                    if (AppSettings.ObjOrient[objCur] == 1) // Если Обход по часовой стрелке - попутный для фрезы
+                    {
+                        AppSettings.ObjOrient[objCur] = 0; // То делаем его встречным
+                    }
+                    else
+                    {
+                        AppSettings.ObjOrient[objCur] = 1; // Если он был встречным, то делаем его попутным
+                    }
+
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
+                    {
+                        polyXTmp[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
+                        polyYTmp[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
+                    }
+
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
+                    {
+                        AppSettings.PolygonX[AppSettings.PolyCur] = polyXTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
+                        AppSettings.PolygonY[AppSettings.PolyCur] = polyYTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
+                    }
+                }
+            }
+        }
+
+        private void ReversePolygons() // Меняем у всех закрытых полигонов направление движения на противоположное
+        {
+            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
+            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
+            {
+                if (AppSettings.ObjectType[objCur] == 'P') // Если это закрытые объекты
+                {
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
+                    {
+                        polyXTmp[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
+                        polyYTmp[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
+                    }
+
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
+                    {
+                        AppSettings.PolygonX[AppSettings.PolyCur] = polyXTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
+                        AppSettings.PolygonY[AppSettings.PolyCur] = polyYTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
+                    }
+                }
+            }
+        }
+
+        private void ReverseLines() // Меняем у всех открытых Объектов направление движения на противоположное
+        {
+            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
+            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
+            {
+                if (AppSettings.ObjectType[objCur] == 'L') // Если это закрытые объекты
+                {
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
+                    {
+                        polyXTmp[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
+                        polyYTmp[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
+                    }
+
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
+                    {
+                        AppSettings.PolygonX[AppSettings.PolyCur] = polyXTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
+                        AppSettings.PolygonY[AppSettings.PolyCur] = polyYTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
+                    }
+                }
+            }
+        }
+
+        private void ReverseObjects() // Меняем у всех действительных  объектов направление движения на противоположное
+        {
+            var polyXTmp = new float[AppSettings.PolyLen + 1]; // Координата X - временный массив
+            var polyYTmp = new float[AppSettings.PolyLen + 1]; // Координата Y - временный массив
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++) // Перебираем все объекты
+            {
+                if (AppSettings.ObjectType[objCur] == 'L' || AppSettings.ObjectType[objCur] == 'P') // Если это действительные валидные объекты
+                {
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
+                    {
+                        polyXTmp[AppSettings.PolyCur] = AppSettings.PolygonX[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
+                        polyYTmp[AppSettings.PolyCur] = AppSettings.PolygonY[AppSettings.ObjFirst[objCur] + AppSettings.ObjLast[objCur] - AppSettings.PolyCur]; // Заносим во временное значение, данные с противоположного конца массива
+                    }
+
+                    for (AppSettings.PolyCur = AppSettings.ObjFirst[objCur]; AppSettings.PolyCur <= AppSettings.ObjLast[objCur]; AppSettings.PolyCur++) // Проходим по всем значениям массива
+                    {
+                        AppSettings.PolygonX[AppSettings.PolyCur] = polyXTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
+                        AppSettings.PolygonY[AppSettings.PolyCur] = polyYTmp[AppSettings.PolyCur]; // Заносим в текущее значение, данные с временного массива
+                    }
+                }
+            }
+        }
+
+        private string LineNumber()
+        {
+            var result = "";
+            if (AppSettings.GLineNumber == 0)
+            {
+                return result;
+            }
+
+            result = AppSettings.CurrentLineNumber.ToString();
+            if (result.Length < 6)
+            {
+                for (var i = 1; i <= 6 - result.Length; i++)
+                {
+                    result = "0" + result;
+                }
+            }
+
+            AppSettings.CurrentLineNumber++;
+            return $"N{result}   ";
+        }
+
+        private void RotateButton_ClickAction(object sender, RoutedEventArgs e) 
+        {
+            // поворачиваем все объекты на 90 градусов по часовой стрелке
+            var pointTemp = 0f;
+            pointTemp = AppSettings.PolygonMaxX;
+            AppSettings.PolygonMaxX = AppSettings.PolygonMaxY;
+            AppSettings.PolygonMaxY = pointTemp;
+            pointTemp = AppSettings.Point0X;
+            AppSettings.Point0X = AppSettings.Point0Y;
+            AppSettings.Point0Y = pointTemp * -1 + AppSettings.PolygonMaxY;
+            pointTemp = AppSettings.Point1X;
+            AppSettings.Point1X = AppSettings.Point1Y;
+            AppSettings.Point1Y = pointTemp * -1 + AppSettings.PolygonMaxY;
+            pointTemp = AppSettings.Point2X;
+            AppSettings.Point2X = AppSettings.Point2Y;
+            AppSettings.Point2Y = pointTemp * -1 + AppSettings.PolygonMaxY;
+            AppSettings.MillX1 = AppSettings.Point1X - AppSettings.Point0X;
+            AppSettings.MillY1 = AppSettings.Point1Y - AppSettings.Point0Y;
+            AppSettings.MillX2 = AppSettings.Point2X - AppSettings.Point0X;
+            AppSettings.MillY2 = AppSettings.Point2Y - AppSettings.Point0Y;
+            for (var objCur = 1; objCur <= AppSettings.ObjLen; objCur++)
+            {
+                pointTemp = AppSettings.ObjXCenter[objCur];
+                AppSettings.ObjXCenter[objCur] = AppSettings.ObjYCenter[objCur];
+                AppSettings.ObjYCenter[objCur] = pointTemp * -1 + AppSettings.PolygonMaxY;
+                pointTemp = AppSettings.ObjXCenterBox[objCur];
+                AppSettings.ObjXCenterBox[objCur] = AppSettings.ObjYCenterBox[objCur];
+                AppSettings.ObjYCenterBox[objCur] = pointTemp * -1 + AppSettings.PolygonMaxY;
+                pointTemp = AppSettings.ObjXDimension[objCur];
+                AppSettings.ObjXDimension[objCur] = AppSettings.ObjYDimension[objCur];
+                AppSettings.ObjYDimension[objCur] = pointTemp;
+            }
+
+            for (var i = 1; i < AppSettings.PolyLen; i++)
+            {
+                pointTemp = AppSettings.PolygonX[i];
+                AppSettings.PolygonX[i] = AppSettings.PolygonY[i];
+                AppSettings.PolygonY[i] = pointTemp * -1 + AppSettings.PolygonMaxY;
+            }
+
+            DrawOnScreen();
+            DebugTextBox.Text += "\nПоворот рабочего поля на 90 градусов";
+            Statistic();
+            FileOpenButton.Focus();
+        }
+
+        private void DebugTextBox_TextChangedAction(object sender, TextChangedEventArgs e)
+        {
+            DebugTextBox.ScrollToEnd();
         }
     }
 }
