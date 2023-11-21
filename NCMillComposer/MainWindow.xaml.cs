@@ -753,6 +753,7 @@ namespace NCMillComposer
                         AppSettings.PolyTmpLine = streamReader.ReadLine().Trim(); // Считываем строку из файла
                     }
 
+                    dontReadLine = false;
                     if (AppSettings.PolyTmpLine.Substring(0, 2) == "SP") // Ищем цвет в файле и ничего пока не делаем
                     {
                         AppSettings.PolyTmpColor = Convert.ToInt16(AppSettings.PolyTmpLine.Substring(2, 1)); // сохраняем цвет объекта
@@ -1473,10 +1474,10 @@ namespace NCMillComposer
                     streamWriter.WriteLine($"{LineNumber()}' 1. ОТКАЛИБРОВАТЬ поверхность (7-я иконка)");
                     streamWriter.WriteLine($"{LineNumber()}' 2. Положить ЛИЦОМ ВВЕРХ, ШАПКОЙ ОТ СЕБЯ");
                     streamWriter.WriteLine($"{LineNumber()}' 3. ЛАЗЕР на ТОЧКУ =0=, закрепить и НАЖАТЬ =СТАРТ= (F9)");
-                    streamWriter.WriteLine($"{LineNumber()}' 4. ТОЧКУ -1- макс. подвинуть под лазер, потом (Операции => Покачивать)\n");
-                    streamWriter.WriteLine($"{LineNumber()}' 5. Перемещая ЛАЗЕР, точно установить его на ТОЧКУ -1- и =СТАРТ= (F9)\n");
-                    streamWriter.WriteLine($"{LineNumber()}' 6. (Операции => Покачивать) установить ЛАЗЕР точно на ТОЧКУ -2-\n");
-                    streamWriter.WriteLine($"{LineNumber()}' 7. ЗАКРЕПИТЬ! По выходу шпинделя на обороты нажать =СТАРТ= (F9)\n");
+                    streamWriter.WriteLine($"{LineNumber()}' 4. ТОЧКУ -1- макс. подвинуть под лазер, потом (Операции => Покачивать)");
+                    streamWriter.WriteLine($"{LineNumber()}' 5. Перемещая ЛАЗЕР, точно установить его на ТОЧКУ -1- и =СТАРТ= (F9)");
+                    streamWriter.WriteLine($"{LineNumber()}' 6. (Операции => Покачивать) установить ЛАЗЕР точно на ТОЧКУ -2-");
+                    streamWriter.WriteLine($"{LineNumber()}' 7. ЗАКРЕПИТЬ! По выходу шпинделя на обороты нажать =СТАРТ= (F9)");
                     streamWriter.WriteLine($"{LineNumber()}' 8. РЕЗКА начнется НЕЗАМЕДЛИТЕЛЬНО!");
                     streamWriter.WriteLine($"{LineNumber()}'------- ЭТО ПРОГРАММА - ЕЁ НЕ МЕНЯТЬ ---------");
                     streamWriter.WriteLine($"{LineNumber()}M801 \"\""); // Очищаем область сообщений
@@ -1587,7 +1588,7 @@ namespace NCMillComposer
                         if (AppSettings.ObjectType[curOperateObject] == 'P' || AppSettings.ObjectType[curOperateObject] == 'L') // eсли это действительные объекты
                         {
                             RotateBeginOfObjectToPoint(curXPoint, curYPoint, curOperateObject); // Повернем объект ближней точкой к текущей
-                            for (float millZCur = AppSettings.MillZStart; millZCur <= AppSettings.MillZ; millZCur += AppSettings.MillZ1 * -1) // Цикл количества проходов
+                            for (float millZCur = AppSettings.MillZStart; millZCur >= AppSettings.MillZ; millZCur += AppSettings.MillZ1 * -1) // Цикл количества проходов
                             {
                                 if (millZCur == AppSettings.MillZStart) // первое погружение при многопроходной резке
                                 {
@@ -1797,7 +1798,7 @@ namespace NCMillComposer
             inString = inString.Replace(',', '.');
             if (inString.IndexOf('.') == -1)
             {
-                return result + ".000";
+                return inString + ".000";
             }
 
             result = inString.Substring(0, inString.IndexOf(".") + 1);
@@ -3148,7 +3149,7 @@ namespace NCMillComposer
             return $"N{result}   ";
         }
 
-        private void RotateButton_ClickAction(object sender, RoutedEventArgs e) 
+        private void RotateButton_ClickAction(object sender, RoutedEventArgs e)
         {
             // поворачиваем все объекты на 90 градусов по часовой стрелке
             var pointTemp = 0f;
@@ -3197,6 +3198,14 @@ namespace NCMillComposer
         private void DebugTextBox_TextChangedAction(object sender, TextChangedEventArgs e)
         {
             DebugTextBox.ScrollToEnd();
+        }
+
+        private void AllowOnlyFloatDigitInputToTextBox_Action(object sender, TextCompositionEventArgs e)
+        {
+            if (!(e.Text[0] == '-' && ((TextBox)sender).Text.Length == 0) && !((e.Text[0] == '.' || e.Text[0] == ',') && !(((TextBox)sender).Text.Contains('.') || ((TextBox)sender).Text.Contains(',') || ((TextBox)sender).Text.Length == 0 || (((TextBox)sender).Text.IndexOf('-') == 0 && ((TextBox)sender).Text.Length == 1))) && !Char.IsDigit(e.Text, 0))
+            {
+                e.Handled = true;
+            }
         }
     }
 }

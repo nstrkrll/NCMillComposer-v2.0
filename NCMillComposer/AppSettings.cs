@@ -10,7 +10,7 @@ namespace NCMillComposer
         // _programDirectory
         public static string ProgDir = Environment.CurrentDirectory; // Директория откуда запускалась программа
         // _programName
-        public static string ProgName = "NcMillComposer"; // Название программы
+        public static string ProgName = "Nc Mill Composer"; // Название программы
         public static string FileMask; // Маска для открытия файла
         public static string FileExtension; // Расширение для поиска и открытия файла
         public static string FileName; // Имя открытого файла

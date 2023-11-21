@@ -75,9 +75,9 @@
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" FontSize="12" HorizontalAlignment="Center" Content="Старт Z  за   Проход   mm  Итог Z" />
-                    <TextBox x:Name="StartZTextBox" KeyDown="ChangeFocusToPassTextBox_KeyDownAction" LostFocus="TextBox_LeaveAction" Grid.Row="1" Grid.Column="0" />
-                    <TextBox x:Name="PassTextBox" KeyDown="ChangeFocusToResultZTextBox_KeyDownAction" LostFocus="TextBox_LeaveAction"  Grid.Row="1" Grid.Column="2" />
-                    <TextBox x:Name="ResultZTextBox" KeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="TextBox_LeaveAction" Grid.Row="1" Grid.Column="4" />
+                    <TextBox x:Name="StartZTextBox" PreviewKeyDown="ChangeFocusToPassTextBox_KeyDownAction" LostFocus="TextBox_LeaveAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="PassTextBox" PreviewKeyDown="ChangeFocusToResultZTextBox_KeyDownAction" LostFocus="TextBox_LeaveAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action"  Grid.Row="1" Grid.Column="2" />
+                    <TextBox x:Name="ResultZTextBox" PreviewKeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="TextBox_LeaveAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" Grid.Row="1" Grid.Column="4" />
                 </Grid>
             </Border>
 
@@ -95,11 +95,11 @@
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Content="Z неопасно" />
-                    <TextBox x:Name="SafeZTextBox" KeyDown="ChangeFocusToMillDTextBoxOrMillTextBox_KeyDownAction" LostFocus="TextBox_LeaveAction" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="SafeZTextBox" PreviewKeyDown="ChangeFocusToMillDTextBoxOrMillTextBox_KeyDownAction" LostFocus="TextBox_LeaveAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" Grid.Row="1" Grid.Column="0" />
                     <Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="D фрезы" />
-                    <TextBox x:Name="MillDTextBox" KeyDown="ChangeFocusToMillTextBox_KeyDownAction" LostFocus="TextBox_LeaveAction" Grid.Row="1" Grid.Column="2" />
+                    <TextBox x:Name="MillDTextBox" PreviewKeyDown="ChangeFocusToMillTextBox_KeyDownAction" LostFocus="TextBox_LeaveAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" Grid.Row="1" Grid.Column="2" />
                     <Label Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Content="Шпиндель" />
-                    <TextBox x:Name="MillTextBox" KeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="TextBox_LeaveAction" Grid.Row="1" Grid.Column="4" />
+                    <TextBox x:Name="MillTextBox" PreviewKeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="TextBox_LeaveAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" Grid.Row="1" Grid.Column="4" />
                 </Grid>
             </Border>
 
@@ -115,8 +115,8 @@
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="G01 подача mm/мин Z" />
-                    <TextBox x:Name="G01TextBox" KeyDown="ChangeFocusToMinZTextBox_KeyDownAction" LostFocus="TextBox_LeaveAction" Grid.Row="1" Grid.Column="0" />
-                    <TextBox x:Name="MinZTextBox" KeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="TextBox_LeaveAction" Grid.Row="1" Grid.Column="2" />
+                    <TextBox x:Name="G01TextBox" PreviewKeyDown="ChangeFocusToMinZTextBox_KeyDownAction" LostFocus="TextBox_LeaveAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="MinZTextBox" PreviewKeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="TextBox_LeaveAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" Grid.Row="1" Grid.Column="2" />
                 </Grid>
             </Border>
 
@@ -171,8 +171,8 @@
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="X mm  Точка -1-  Y mm" />
-                    <TextBox x:Name="Point1XTextBox" KeyDown="ChangeFocusToPoint1YTextBox_KeyDownAction" LostFocus="TextBox_LeaveWithReDrawAction" MouseDoubleClick="Point1TextBox_MouseDoubleClickAction" Grid.Row="1" Grid.Column="0" />
-                    <TextBox x:Name="Point1YTextBox" KeyDown="ChangeFocusToPoint2XTextBox_KeyDownAction" LostFocus="TextBox_LeaveWithReDrawAction" MouseDoubleClick="Point1TextBox_MouseDoubleClickAction" Grid.Row="1" Grid.Column="2" />
+                    <TextBox x:Name="Point1XTextBox" PreviewKeyDown="ChangeFocusToPoint1YTextBox_KeyDownAction" LostFocus="TextBox_LeaveWithReDrawAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" MouseDoubleClick="Point1TextBox_MouseDoubleClickAction" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="Point1YTextBox" PreviewKeyDown="ChangeFocusToPoint2XTextBox_KeyDownAction" LostFocus="TextBox_LeaveWithReDrawAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" MouseDoubleClick="Point1TextBox_MouseDoubleClickAction" Grid.Row="1" Grid.Column="2" />
                 </Grid>
             </Border>
 
@@ -188,8 +188,8 @@
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="X mm  Точка -2-  Y mm" />
-                    <TextBox x:Name="Point2XTextBox" KeyDown="ChangeFocusToPoint2YTextBox_KeyDownAction" LostFocus="TextBox_LeaveWithReDrawAction" MouseDoubleClick="Point2TextBox_MouseDoubleClickAction" Grid.Row="1" Grid.Column="0" />
-                    <TextBox x:Name="Point2YTextBox" KeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="TextBox_LeaveWithReDrawAction" MouseDoubleClick="Point2TextBox_MouseDoubleClickAction" Grid.Row="1" Grid.Column="2" />
+                    <TextBox x:Name="Point2XTextBox" PreviewKeyDown="ChangeFocusToPoint2YTextBox_KeyDownAction" LostFocus="TextBox_LeaveWithReDrawAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" MouseDoubleClick="Point2TextBox_MouseDoubleClickAction" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="Point2YTextBox" PreviewKeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="TextBox_LeaveWithReDrawAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" MouseDoubleClick="Point2TextBox_MouseDoubleClickAction" Grid.Row="1" Grid.Column="2" />
                 </Grid>
             </Border>
 
@@ -203,7 +203,7 @@
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Лазер Y" />
-                    <TextBox x:Name="LaserYTextBox" KeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="TextBox_LeaveAction" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="LaserYTextBox" PreviewKeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="TextBox_LeaveAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" Grid.Row="1" Grid.Column="0" />
                 </Grid>
             </Border>
 
@@ -217,7 +217,7 @@
                         <ColumnDefinition Width="70" />
                     </Grid.ColumnDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Скрыть &lt;" />
-                    <TextBox x:Name="HideTextBox" KeyDown="ChangeFocusToFileOpenButton_KeyDownAction" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="HideTextBox" PreviewKeyDown="ChangeFocusToFileOpenButton_KeyDownAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" Grid.Row="1" Grid.Column="0" />
                 </Grid>
             </Border>
 
@@ -240,7 +240,7 @@
                     </Grid.ColumnDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Масштаб" />
                     <Label Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" Content="Авто" />
-                    <TextBox x:Name="ScaleTextBox" LostFocus="ScaleTextBox_LeaveAction" KeyDown="ChangeFocusToFileOpenButton_KeyDownAction" Grid.Row="1" Grid.Column="0" />
+                    <TextBox x:Name="ScaleTextBox" PreviewKeyDown="ChangeFocusToFileOpenButton_KeyDownAction" LostFocus="ScaleTextBox_LeaveAction" PreviewTextInput="AllowOnlyFloatDigitInputToTextBox_Action" Grid.Row="1" Grid.Column="0" />
                     <CheckBox x:Name="ScaleAutoCheckBox" Checked="ScaleAutoCheckBox_CheckedChangedAction" Unchecked="ScaleAutoCheckBox_CheckedChangedAction" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Grid>
             </Border>
@@ -270,8 +270,11 @@
         </Grid>
         <!---->
 
-        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Padding="10" Margin="2.5">
-            <Canvas x:Name="Canvas" SizeChanged="Canvas_SizeChangedAction" MinWidth="500" MinHeight="500" />
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Padding="10" Margin="2.5" MinWidth="500" MinHeight="500">
+            <Grid>
+                <Image Source="Resources\Images\background.png" MaxWidth="500" />
+                <Canvas x:Name="Canvas" SizeChanged="Canvas_SizeChangedAction" />
+            </Grid>
         </Border>
     </Grid>
 </Window>
