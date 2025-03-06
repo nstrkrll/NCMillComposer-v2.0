@@ -11,24 +11,24 @@ namespace NCMillComposer
         public static string ProgDir = Environment.CurrentDirectory; // Директория откуда запускалась программа
         // _programName
         public static string ProgName = "Nc Mill Composer"; // Название программы
-        public static string FileMask; // Маска для открытия файла
-        public static string FileExtension; // Расширение для поиска и открытия файла
-        public static string FileName; // Имя открытого файла
+        public static string FileMask = ""; // Маска для открытия файла
+        public static string FileExtension = ""; // Расширение для поиска и открытия файла
+        public static string FileName = ""; // Имя открытого файла
         // _currentFileExtension
-        public static string FileDim; // Расширение открытого файла
-        public static string OpenDialogTitle; // Название окна выбора файла
+        public static string FileDim = ""; // Расширение открытого файла
+        public static string OpenDialogTitle = ""; // Название окна выбора файла
         // _openFirstDirectoryTitle
-        public static string OpenDir1Title; // Название окна выбора первой папки
+        public static string OpenDir1Title = ""; // Название окна выбора первой папки
         // _openSecondDirectoryTitle
-        public static string OpenDir2Title; // Название окна выбора второй папки
-        public static string SaveDialogTitle; // Название окна выбора директории для сохранения
-        public static string OpenDirectory; // Директория для открытия (рабочая)
-        public static string SaveDirectory; // Директория для сохранения
+        public static string OpenDir2Title = ""; // Название окна выбора второй папки
+        public static string SaveDialogTitle = ""; // Название окна выбора директории для сохранения
+        public static string OpenDirectory = ""; // Директория для открытия (рабочая)
+        public static string SaveDirectory = ""; // Директория для сохранения
         // _firstSearchDirectory
-        public static string OpenDir1; // Первая директория для поиска файлов
+        public static string OpenDir1 = ""; // Первая директория для поиска файлов
         // _secondSearchDirectory
-        public static string OpenDir2; // Вторая директория для поиска файлов
-        public static string TempString; // Временная символьная переменная
+        public static string OpenDir2 = ""; // Вторая директория для поиска файлов
+        public static string TempString = ""; // Временная символьная переменная
         public static float PluInch; // Сколько в миллиметре шагов плоттера указано в дюймах
         public static float PluPercent; // Масштаб при экспорте, сохраненный в настройках программы
         // _currentPluPercent
@@ -114,15 +114,18 @@ namespace NCMillComposer
         public static int Obj2TmpNum; // Номер второго считываемого из файла или массива объекта
 
         // _currentPolygonLine
-        public static string PolyTmpLine; // Текущая строка из массива с векторами для обработок разных
+        public static string PolyTmpLine = ""; // Текущая строка из массива с векторами для обработок разных
         // _currentPolygonObjColor
         public static short PolyTmpColor; // Текущий цвет объекта
         // _pointSearchIndex
-        public static byte IdxLineXY; // Индекс для перебора символов при поиске X и Y в строке файла
+        // не используется
+        // public static byte IdxLineXY; // Индекс для перебора символов при поиске X и Y в строке файла
         // _pointSearchTempLine
-        public static string TmpLineXY; // Временная строка для сбора символов X и Y из строки файла
+        // не используется
+        // public static string TmpLineXY = ""; // Временная строка для сбора символов X и Y из строки файла
         // _pointSearchChar
-        public static char TmpCharXY; // Временная символ для сбора символов X и Y из строки файла
+        // не используется
+        // public static char TmpCharXY; // Временная символ для сбора символов X и Y из строки файла
 
         public static float[] PolygonX = new float[2]; // Координата X
         public static float[] PolygonY = new float[2]; // Координата Y
@@ -163,7 +166,8 @@ namespace NCMillComposer
         // _maxNestingLevel
         public static int ObjRootMax; // Максимальный уровень вложенности среди объектов
         // _middleLineToZeroPointLength
-        public static float ObjToZero; // Длина средней линии до нуля координат
+        // не используется
+        // public static float ObjToZero; // Длина средней линии до нуля координат
 
         // _currentSearchObjectNumber
         public static int ObjNumCur; // Номер текущего обрабатываемого объекта при поиске объектов
@@ -182,7 +186,7 @@ namespace NCMillComposer
         public static float PolygonMaxY; // Максимальное значение координаты по Y в массиве
 
         // _sameNestingLevelObjectNumbers
-        public static int[] ChildList; // Массив с номерами объектов одного уровня вложенности
+        public static int[] ChildList = []; // Массив с номерами объектов одного уровня вложенности
         // _sameNestingLevelObjectNumbersArrayLength
         public static int ChildListLen; // Длина массива с номерами объектов одного уровня вложенности
     }
