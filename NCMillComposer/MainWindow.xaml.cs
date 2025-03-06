@@ -812,9 +812,37 @@ namespace NCMillComposer
             FileNameFilterTextBox.Text = "";
         }
 
+        private string FindFile()
+        {
+            if (string.IsNullOrWhiteSpace(FileNameFilterTextBox.Text))
+            {
+                return string.Empty;
+            }
+
+            var files = Directory.GetFiles(AppSettings.OpenDir1, $"*{FileNameFilterTextBox.Text}*");
+            if (files != null && files.Length > 0)
+            {
+                return Path.GetDirectoryName(files[0]);
+            }
+
+            files = Directory.GetFiles(AppSettings.OpenDir2, $"*{FileNameFilterTextBox.Text}*");
+            if (files != null)
+            {
+                return Path.GetDirectoryName(files[0]);
+            }
+
+            return string.Empty;
+        }
+
         private void FileOpenAndReadObjects() // Открываем и загружаем в массив файл
         {
             AppSettings.IsFileLoaded = false;
+            var altOpenDir = FindFile();
+            if (altOpenDir != string.Empty)
+            {
+                AppSettings.OpenDirectory = altOpenDir;
+            }
+
             var fileDialog = new OpenFileDialog
             {
                 Filter = AppSettings.FileMask,
