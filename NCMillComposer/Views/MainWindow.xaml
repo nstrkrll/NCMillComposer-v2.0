@@ -1,0 +1,31 @@
+﻿<Window x:Class="NCMillComposer.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NCMillComposer.Views"
+        mc:Ignorable="d"
+        Title="PLT Viewer" Height="600" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Button Content="Load PLT" Command="{Binding LoadCommand}" HorizontalAlignment="Left" Margin="10"/>
+        <Canvas x:Name="DrawingCanvas" Grid.Row="1" Background="White">
+            <ItemsControl ItemsSource="{Binding Contours}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Polyline Points="{Binding Points}" Stroke="Black" StrokeThickness="1"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Canvas>
+    </Grid>
+</Window>

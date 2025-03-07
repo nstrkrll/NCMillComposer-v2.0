@@ -33,7 +33,7 @@ namespace NCMillComposer
             var stringCursor = 1; // Указатель при переборе списка дочерних объектов
             while (stringCursor <= AppSettings.ObjChilds[objectNumber].Length) // В поисках номера Перебираем все символы, пока не дойдем до конца строки
             {
-                string tempStringLine = "";
+                var tempStringLine = "";
                 while (stringCursor <= AppSettings.ObjChilds[objectNumber].Length) // В поисках цифры Перебираем все символы, пока не дойдем до конца строки
                 {
                     if (AppSettings.ObjChilds[objectNumber].Substring(stringCursor - 1, 1) != " ") // Если считали символ-цифру
