@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:NCMillComposer.Views"
+        xmlns:local="clr-namespace:NCMillComposer.Views" 
         mc:Ignorable="d"
         Title="PLT Viewer" Height="600" Width="800">
     <Grid>
@@ -13,8 +13,14 @@
         </Grid.RowDefinitions>
 
         <Button Content="Load PLT" Command="{Binding LoadCommand}" HorizontalAlignment="Left" Margin="10"/>
-        <Canvas x:Name="DrawingCanvas" Grid.Row="1" Background="White">
-            <ItemsControl ItemsSource="{Binding Contours}">
+        <Canvas x:Name="DrawingCanvas" Grid.Row="1" Background="White" Height="{Binding CanvasHeight}" Width="{Binding CanvasWidth}">
+            <Canvas.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}"/>
+                    <TranslateTransform X="{Binding OffsetX}" Y="{Binding OffsetY}"/>
+                </TransformGroup>
+            </Canvas.RenderTransform>
+            <ItemsControl ItemsSource="{Binding Polygons}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas/>

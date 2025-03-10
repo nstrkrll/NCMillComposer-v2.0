@@ -15,10 +15,9 @@ namespace NCMillComposer
             InitializeComponent();
         }
 
-        // Получить в массив номера всех дочерних объектов и длину этого массива
-        private void GetChildList(int objectNumber)
+        private void GetChildList(int objectNumber) // Получить в массив номера всех дочерних объектов и длину этого массива
         {
-            Array.Resize(ref AppSettings.ChildList, 2); // Очищаем массив дочерних объектов
+            AppSettings.ChildList = new int[2]; // Очищаем массив дочерних объектов
             AppSettings.ChildListLen = 0; // Обнуляем количество дочерних объектов
             if (AppSettings.ObjectType[objectNumber] != 'P' && objectNumber > 0) // Если не действительный объект
             {
@@ -727,22 +726,22 @@ namespace NCMillComposer
             AppSettings.PolyLen = 0; // Длина массива объектов
             AppSettings.PolyTmpColor = 0; // Текущий цвет объекта
             AppSettings.ObjLen = 0; // Количество объектов в массиве (Длина индекса объектов)
-            Array.Resize(ref AppSettings.PolygonX, 2); // Массив Данных координат X объектов
-            Array.Resize(ref AppSettings.PolygonY, 2); // Массив Данных координат Y объектов
-            Array.Resize(ref AppSettings.ObjectType, 2); // Тип объекта D, L, P, +, X, l, p
-            Array.Resize(ref AppSettings.ObjFirst, 2); // Номер первой строки объекта
-            Array.Resize(ref AppSettings.ObjLast, 2); // Номер последней строки объекта
-            Array.Resize(ref AppSettings.ObjectColor, 2); // Цвет объекта
-            Array.Resize(ref AppSettings.ObjXCenter, 2); // Координаты средней точки Х
-            Array.Resize(ref AppSettings.ObjYCenter, 2); // Координаты средней точки Y
-            Array.Resize(ref AppSettings.ObjXCenterBox, 2); // Координаты средней точки Х по коробочке
-            Array.Resize(ref AppSettings.ObjYCenterBox, 2); // Координаты средней точки Y по коробочке
-            Array.Resize(ref AppSettings.ObjXDimension, 2); // Размер объекта по X
-            Array.Resize(ref AppSettings.ObjYDimension, 2); // Размер объекта по Y
-            Array.Resize(ref AppSettings.ObjOrient, 2); // Направление обхода объекта
-            Array.Resize(ref AppSettings.ObjChilds, 2); // Список номеров дочерних объектов
-            Array.Resize(ref AppSettings.ObjRoot, 2); // Уровень вложенности объекта, 0 - объект наружный
-            Array.Resize(ref AppSettings.ObjParent, 2); // Родительский объект
+            AppSettings.PolygonX = new float[2]; // Массив Данных координат X объектов
+            AppSettings.PolygonY = new float[2]; // Массив Данных координат Y объектов
+            AppSettings.ObjectType = new char[2]; // Тип объекта D, L, P, +, X, l, p
+            AppSettings.ObjFirst = new int[2]; // Номер первой строки объекта
+            AppSettings.ObjLast = new int[2]; // Номер последней строки объекта
+            AppSettings.ObjectColor = new int[2]; // Цвет объекта
+            AppSettings.ObjXCenter = new float[2]; // Координаты средней точки Х
+            AppSettings.ObjYCenter = new float[2]; // Координаты средней точки Y
+            AppSettings.ObjXCenterBox = new float[2]; // Координаты средней точки Х по коробочке
+            AppSettings.ObjYCenterBox = new float[2]; // Координаты средней точки Y по коробочке
+            AppSettings.ObjXDimension = new float[2]; // Размер объекта по X
+            AppSettings.ObjYDimension = new float[2]; // Размер объекта по Y
+            AppSettings.ObjOrient = new int[2]; // Направление обхода объекта
+            AppSettings.ObjChilds = new string[2]; // Список номеров дочерних объектов
+            AppSettings.ObjRoot = new int[2]; // Уровень вложенности объекта, 0 - объект наружный
+            AppSettings.ObjParent = new int[2]; // Родительский объект
             var dontReadLine = false; // Запрет чтения строки из файла в случае перехода на другой объект
             using (var streamReader = new StreamReader(AppSettings.OpenDirectory + "\\" + AppSettings.FileName + AppSettings.FileDim)) // Открываем файл на построчное чтение
             {
@@ -882,22 +881,22 @@ namespace NCMillComposer
                     AppSettings.IsFileLoaded = false;
                     FileSaveAndCloseButton.IsEnabled = false;
                     RotateButton.IsEnabled = false;
-                    Array.Resize(ref AppSettings.PolygonX, 2); // Массив Данных координат X объектов
-                    Array.Resize(ref AppSettings.PolygonY, 2); // Массив Данных координат Y объектов
-                    Array.Resize(ref AppSettings.ObjectType, 2); // Тип объекта D, L, P, +, X, l, p
-                    Array.Resize(ref AppSettings.ObjFirst, 2); // Номер первой строки объекта
-                    Array.Resize(ref AppSettings.ObjLast, 2); // Номер последней строки объекта
-                    Array.Resize(ref AppSettings.ObjectColor, 2); // Цвет объекта
-                    Array.Resize(ref AppSettings.ObjXCenter, 2); // Координаты средней точки Х
-                    Array.Resize(ref AppSettings.ObjYCenter, 2); // Координаты средней точки Y
-                    Array.Resize(ref AppSettings.ObjXCenterBox, 2); // Координаты средней точки Х по коробочке
-                    Array.Resize(ref AppSettings.ObjYCenterBox, 2); // Координаты средней точки Y по коробочке
-                    Array.Resize(ref AppSettings.ObjXDimension, 2); // Размер объекта по X
-                    Array.Resize(ref AppSettings.ObjYDimension, 2); // Размер объекта по Y
-                    Array.Resize(ref AppSettings.ObjOrient, 2); // Направление обхода объекта
-                    Array.Resize(ref AppSettings.ObjChilds, 2); // Список номеров дочерних объектов
-                    Array.Resize(ref AppSettings.ObjRoot, 2); // Уровень вложенности объекта, 0 - объект наружный
-                    Array.Resize(ref AppSettings.ObjParent, 2); // Родительский объект
+                    AppSettings.PolygonX = new float[2]; // Массив Данных координат X объектов
+                    AppSettings.PolygonY = new float[2]; // Массив Данных координат Y объектов
+                    AppSettings.ObjectType = new char[2]; // Тип объекта D, L, P, +, X, l, p
+                    AppSettings.ObjFirst = new int[2]; // Номер первой строки объекта
+                    AppSettings.ObjLast = new int[2]; // Номер последней строки объекта
+                    AppSettings.ObjectColor = new int[2]; // Цвет объекта
+                    AppSettings.ObjXCenter = new float[2]; // Координаты средней точки Х
+                    AppSettings.ObjYCenter = new float[2]; // Координаты средней точки Y
+                    AppSettings.ObjXCenterBox = new float[2]; // Координаты средней точки Х по коробочке
+                    AppSettings.ObjYCenterBox = new float[2]; // Координаты средней точки Y по коробочке
+                    AppSettings.ObjXDimension = new float[2]; // Размер объекта по X
+                    AppSettings.ObjYDimension = new float[2]; // Размер объекта по Y
+                    AppSettings.ObjOrient = new int[2]; // Направление обхода объекта
+                    AppSettings.ObjChilds = new string[2]; // Список номеров дочерних объектов
+                    AppSettings.ObjRoot = new int[2]; // Уровень вложенности объекта, 0 - объект наружный
+                    AppSettings.ObjParent = new int[2]; // Родительский объект
                     AppSettings.FoundP0 = false;
                     AppSettings.FoundP1 = false;
                     AppSettings.PolyLen = 0; // Длина массива объектов
@@ -1212,20 +1211,20 @@ namespace NCMillComposer
 
             // Очистим и подгоним размеры нового массива
             AppSettings.ObjLen = objLen2;
-            Array.Resize(ref AppSettings.ObjectType, AppSettings.ObjLen + 1); // Тип объекта N, L, P, +, X, l, p
-            Array.Resize(ref AppSettings.ObjFirst, AppSettings.ObjLen + 1); // Номер первой строки объекта
-            Array.Resize(ref AppSettings.ObjLast, AppSettings.ObjLen + 1); // Номер последней строки объекта
-            Array.Resize(ref AppSettings.ObjectColor, AppSettings.ObjLen + 1); // Цвет объекта
-            Array.Resize(ref AppSettings.ObjXCenter, AppSettings.ObjLen + 1); // Координаты средней точки Х объекта
-            Array.Resize(ref AppSettings.ObjYCenter, AppSettings.ObjLen + 1); // Координаты средней точки Y объекта
-            Array.Resize(ref AppSettings.ObjXCenterBox, AppSettings.ObjLen + 1); // Координаты средней точки Х прямоугольника в который вписан объект
-            Array.Resize(ref AppSettings.ObjYCenterBox, AppSettings.ObjLen + 1); // Координаты средней точки Y прямоугольника в который вписан объект
-            Array.Resize(ref AppSettings.ObjXDimension, AppSettings.ObjLen + 1); // Размер объекта по X
-            Array.Resize(ref AppSettings.ObjYDimension, AppSettings.ObjLen + 1); // Размер объекта по Y
-            Array.Resize(ref AppSettings.ObjOrient, AppSettings.ObjLen + 1); // Направление обхода объекта
-            Array.Resize(ref AppSettings.ObjChilds, AppSettings.ObjLen + 1); // Список номеров дочерних объектов
-            Array.Resize(ref AppSettings.ObjRoot, AppSettings.ObjLen + 1); // Уровень вложенности объекта, 0 - объект наружный
-            Array.Resize(ref AppSettings.ObjParent, AppSettings.ObjLen + 1); // Родительский объект
+            AppSettings.ObjectType = new char[AppSettings.ObjLen + 1]; // Тип объекта N, L, P, +, X, l, p
+            AppSettings.ObjFirst = new int[AppSettings.ObjLen + 1]; // Номер первой строки объекта
+            AppSettings.ObjLast = new int[AppSettings.ObjLen + 1]; // Номер последней строки объекта
+            AppSettings.ObjectColor = new int[AppSettings.ObjLen + 1]; // Цвет объекта
+            AppSettings.ObjXCenter = new float[AppSettings.ObjLen + 1]; // Координаты средней точки Х объекта
+            AppSettings.ObjYCenter = new float[AppSettings.ObjLen + 1]; // Координаты средней точки Y объекта
+            AppSettings.ObjXCenterBox = new float[AppSettings.ObjLen + 1]; // Координаты средней точки Х прямоугольника в который вписан объект
+            AppSettings.ObjYCenterBox = new float[AppSettings.ObjLen + 1]; // Координаты средней точки Y прямоугольника в который вписан объект
+            AppSettings.ObjXDimension = new float[AppSettings.ObjLen + 1]; // Размер объекта по X
+            AppSettings.ObjYDimension = new float[AppSettings.ObjLen + 1]; // Размер объекта по Y
+            AppSettings.ObjOrient = new int[AppSettings.ObjLen + 1]; // Направление обхода объекта
+            AppSettings.ObjChilds = new string[AppSettings.ObjLen + 1]; // Список номеров дочерних объектов
+            AppSettings.ObjRoot = new int[AppSettings.ObjLen + 1]; // Уровень вложенности объекта, 0 - объект наружный
+            AppSettings.ObjParent = new int[AppSettings.ObjLen + 1]; // Родительский объект
             for (var i = 1; i <= objLen2; i++)
             {
                 AppSettings.ObjectType[i] = objType2[i];
@@ -1246,8 +1245,8 @@ namespace NCMillComposer
 
             AppSettings.PolyLen = polyLen2; // количество строк в массиве координат
             // Очистим и подгоним размеры нового массива координат
-            Array.Resize(ref AppSettings.PolygonX, AppSettings.PolyLen + 1); // Координата X
-            Array.Resize(ref AppSettings.PolygonY, AppSettings.PolyLen + 1); // Координата Y
+            AppSettings.PolygonX = new float[AppSettings.PolyLen + 1]; // Координата X
+            AppSettings.PolygonY = new float[AppSettings.PolyLen + 1]; // Координата Y
             for (var i = 1; i <= polyLen2; i++)
             {
                 AppSettings.PolygonX[i] = polyX2[i];
@@ -1715,8 +1714,8 @@ namespace NCMillComposer
             FileSaveAndCloseButton.IsEnabled = false;
             RotateButton.IsEnabled = false;
             Canvas.Children.Clear();
-            Array.Resize(ref AppSettings.PolygonX, 1);
-            Array.Resize(ref AppSettings.PolygonY, 1);
+            AppSettings.PolygonX = new float[1];
+            AppSettings.PolygonY = new float[1];
             AppSettings.FoundP0 = false;
             AppSettings.FoundP1 = false;
             AppSettings.PolyLen = 0; // Длина массива объектов
@@ -1812,7 +1811,7 @@ namespace NCMillComposer
             result = result.Replace(',', '.');
             if (result.IndexOf('.') != -1)
             {
-                result = result.Substring(0, result.IndexOf('.')) + result.Substring(result.IndexOf("."), 4);
+                result = result.Substring(0, result.IndexOf('.')) + result.Substring(result.IndexOf("."), 2);
             }
 
             return result;
