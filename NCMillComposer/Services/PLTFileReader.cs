@@ -16,7 +16,7 @@ namespace NCMillComposer.Services
             foreach (string line in lines)
             {
                 var trimmedLine = line.Trim();
-                if (string.IsNullOrEmpty(trimmedLine) || trimmedLine[0] != 'P')
+                if (string.IsNullOrEmpty(trimmedLine) || trimmedLine[0] != 'P' && (trimmedLine[1] != 'U' || trimmedLine[1] != 'D'))
                 {
                     continue;
                 }

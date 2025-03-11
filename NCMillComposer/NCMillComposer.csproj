@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Models\2y5ctsub.s0w~" />
     <None Remove="Resources\AppIcon\appicon.png" />
     <None Remove="Resources\Images\background.png" />
     <None Remove="Resources\Images\folder1.png" />

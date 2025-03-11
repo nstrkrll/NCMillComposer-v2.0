@@ -1,4 +1,5 @@
 ﻿using NCMillComposer.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -41,6 +42,46 @@ namespace NCMillComposer.Services
         }
 
         /// <summary>
+        /// Ищет калибровочные точки (перекрестия)
+        /// </summary>
+        /// <param name="polygons">Список объектов</param>
+        private static void FindCallibraitingPoints(List<Polygon> polygons)
+        {
+            foreach (var polygon1 in polygons)
+            {
+                if (polygon1.ObjectType != 'L' || polygon1.ObjectType == 'X') // если объект не открытый - точно не то, что нужно
+                {
+                    continue;
+                }
+
+                if (polygon1.Points.First().Y == polygon1.Points.Last().Y && polygon1.Points.Count == 2) // объект - прямая горизонтальная линия
+                {
+                    var centerX = (polygon1.MaxX + polygon1.MinX) / 2;
+                    foreach (var polygon2 in polygons)
+                    {
+                        if (polygon2.ObjectType != 'L' || polygon2.ObjectType == 'X') // если объект не открытый - точно не то, что нужно
+                        {
+                            continue;
+                        }
+
+                        if (polygon2.Points.First().X == polygon2.Points.Last().X && polygon2.Points.Count == 2) // объект - прямая вертикальная линия
+                        {
+                            var centerY = (polygon2.MaxY + polygon2.MinY) / 2;
+                            var deviationX = Math.Abs(centerX - polygon2.MaxX);
+                            var deviationY = Math.Abs(centerY - polygon1.MaxY);
+                            if (deviationX <= 1 && deviationY <= 1)
+                            {
+                                polygon1.ObjectType = 'X';
+                                polygon2.ObjectType = 'X';
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Устанавливает тип каждого объекта (P - закрытый; L - открытый)
         /// </summary>
         /// <param name="polygons">Список объектов</param>
@@ -56,12 +97,14 @@ namespace NCMillComposer.Services
                 if (polygon.Points.First() == polygon.Points.Last())
                 {
                     polygon.ObjectType = 'P';
-                    polygon.Points.RemoveAt(polygon.Points.Count - 1);
+                    //polygon.Points.RemoveAt(polygon.Points.Count - 1);
                     continue;
                 }
 
                 polygon.ObjectType = 'L';
             }
+
+            FindCallibraitingPoints(polygons);
         }
 
         /// <summary>
@@ -129,51 +172,39 @@ namespace NCMillComposer.Services
         /// <param name="polygons">Список объектов</param>
         public static void ConvertCoordinatesToMillimiters(List<Polygon> polygons)
         {
-            float conversionFactor = Settings.PlotterUnitsPerInch * 25.4f * (Settings.Scale / 100f);
+            float conversionFactor = 25.4f * (Settings.Scale / 100f) / Settings.PlotterUnitsPerInch;
             foreach (var polygon in polygons)
             {
                 for (var j = 0; j < polygon.Points.Count; j++)
                 {
                     polygon.Points[j] = new Point
                     {
-                        X = polygon.Points[j].X / conversionFactor,
-                        Y = polygon.Points[j].Y / conversionFactor,
+                        X = polygon.Points[j].X * conversionFactor,
+                        Y = polygon.Points[j].Y * conversionFactor,
                     };
                 }
             }
         }
 
-
         /// <summary>
-        /// 
+        /// Приводит координаты всех объектов к нулю в нижнем левом углу
         /// </summary>
-        /// <param name="polygons"></param>
+        /// <param name="polygons">Список объектов</param>
         public static void NormalizePolygonsCoordinates(List<Polygon> polygons)
         {
-            var minX = polygons[0].Points[0].X; // указываем, что X первой точки - минимальный X
-            var minY = polygons[0].Points[0].Y; // указываем, что Y первой точки - минимальный Y
-            for (var i = 0; i < polygons.Count; i++)
+            var minX = polygons.Min(x => x.MinX); // находим минимальный X среди всех объектов
+            var minY = polygons.Min(x => x.MinY); // находим минимальный Y среди всех объектов
+            foreach (var polygon in polygons)
             {
-                
-            }
-        }
-
-        /*
-        public static void ConvertCoordinatesToMillimiters(System.Collections.Generic.List<Polygon> polygons)
-        {
-            foreach(var polygon in polygons)
-            {
-                foreach (var point in polygon.Points)
+                for (var j = 0; j < polygon.Points.Count; j++)
                 {
- 
+                    polygon.Points[j] = new Point
+                    {
+                        X = polygon.Points[j].X - minX,
+                        Y = polygon.Points[j].Y - minY,
+                    };
                 }
             }
         }
-
-        private static System.Windows.Point ConvertToMm(System.Windows.Point point)
-        {
-            return new System.Windows.Point(point.X * _plotterUnitsToMillimiters, point.Y * _plotterUnitsToMillimiters);
-        }
-        */
     }
 }

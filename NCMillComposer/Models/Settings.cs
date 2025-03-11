@@ -1,5 +1,8 @@
 ﻿namespace NCMillComposer.Models
 {
+    /// <summary>
+    /// Класс настроек программы
+    /// </summary>
     public static class Settings
     {
         /// <summary>
@@ -10,6 +13,16 @@
         /// <summary>
         /// Масштаб (в процентах)
         /// </summary>
-        public static float Scale = 100;
+        public static float Scale = 100f;
+
+        /// <summary>
+        /// Автомасштаб
+        /// </summary>
+        public static bool IsAutoScaleEnabled = true;
+
+        /// <summary>
+        /// Ширина стола
+        /// </summary>
+        public static float TableWidth = 1370f;
     }
 }

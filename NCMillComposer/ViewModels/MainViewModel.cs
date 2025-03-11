@@ -1,8 +1,11 @@
-﻿using NCMillComposer.Components;
+﻿using Microsoft.Win32;
+using NCMillComposer.Components;
+using NCMillComposer.Models;
 using NCMillComposer.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
@@ -10,16 +13,17 @@ namespace NCMillComposer.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        private ObservableCollection<Models.Polygon> _polygons = [];
-        private double _canvasWidth = 800;
-        private double _canvasHeight = 600;
+        private ObservableCollection<Polygon> _polygons = [];
+        private double _canvasWidth = 600;
+        private double _canvasHeight = 800;
         private double _offsetX;
         private double _offsetY;
         private double _scale = 1.0;
-        public ICommand LoadCommand { get; private set; }
-        public event PropertyChangedEventHandler PropertyChanged;
 
-        public ObservableCollection<Models.Polygon> Polygons
+        public event PropertyChangedEventHandler PropertyChanged;
+        public ICommand LoadCommand { get; private set; }
+
+        public ObservableCollection<Polygon> Polygons
         {
             get => _polygons;
             set
@@ -54,19 +58,31 @@ namespace NCMillComposer.ViewModels
         public double OffsetX
         {
             get => _offsetX;
-            set { _offsetX = value; OnPropertyChanged(); }
+            set 
+            { 
+                _offsetX = value; 
+                OnPropertyChanged(); 
+            }
         }
 
         public double OffsetY
         {
             get => _offsetY;
-            set { _offsetY = value; OnPropertyChanged(); }
+            set 
+            { 
+                _offsetY = value; 
+                OnPropertyChanged(); 
+            }
         }
 
         public double Scale
         {
             get => _scale;
-            set { _scale = value; OnPropertyChanged(); }
+            set 
+            { 
+                _scale = value; 
+                OnPropertyChanged(); 
+            }
         }
 
         public MainViewModel()
@@ -76,7 +92,7 @@ namespace NCMillComposer.ViewModels
 
         public void LoadPLT(object parameter)
         {
-            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog
+            var openFileDialog = new OpenFileDialog
             {
                 Filter = "PLT files (*.plt)|*.plt"
             };
@@ -85,6 +101,9 @@ namespace NCMillComposer.ViewModels
             {
                 var polygons = PLTFileReader.ReadFile(openFileDialog.FileName);
                 PolygonHandler.SetPolygonsType(polygons);
+                PolygonHandler.ConnectOpenPolygons(polygons);
+                PolygonHandler.ConvertCoordinatesToMillimiters(polygons);
+                PolygonHandler.NormalizePolygonsCoordinates(polygons);
                 Polygons.Clear();
                 foreach (var polygon in polygons)
                 {
@@ -97,44 +116,24 @@ namespace NCMillComposer.ViewModels
 
         private void AdjustContours()
         {
-            if (Polygons.Count == 0) return;
-
-            // Находим границы чертежа
-            double minX = double.MaxValue;
-            double minY = double.MaxValue;
-            double maxX = double.MinValue;
-            double maxY = double.MinValue;
-
-            foreach (var polygon in Polygons)
+            if (Polygons.Count == 0)
             {
-                foreach (var point in polygon.Points)
-                {
-                    if (point.X < minX) minX = point.X;
-                    if (point.Y < minY) minY = point.Y;
-                    if (point.X > maxX) maxX = point.X;
-                    if (point.Y > maxY) maxY = point.Y;
-                }
+                return;
             }
 
-            double width = maxX - minX;
-            double height = maxY - minY;
-
-            // Вычисляем масштаб
-            double scaleX = _canvasWidth / width;
-            double scaleY = _canvasHeight / height;
-            Scale = Math.Min(scaleX, scaleY) * 0.9; // 90% размера для отступов
-
-            // Вычисляем центр чертежа
+            var maxX = Polygons.Max(x => x.MaxX);
+            var maxY = Polygons.Max(x => x.MaxY);
+            var minX = Polygons.Min(x => x.MinX);
+            var minY = Polygons.Min(x => x.MinY);
+            double scaleX = CanvasWidth / maxX;
+            double scaleY = CanvasHeight / maxY;
+            Scale = Math.Min(scaleX, scaleY);
             double centerX = (minX + maxX) / 2;
             double centerY = (minY + maxY) / 2;
-
-            // Вычисляем центр Canvas
-            double canvasCenterX = _canvasWidth / 2;
-            double canvasCenterY = _canvasHeight / 2;
-
-            // Вычисляем смещение
-            OffsetX = canvasCenterX - centerX * Scale;
-            OffsetY = canvasCenterY - centerY * Scale;
+            double canvasCenterX = CanvasWidth / 2;
+            double canvasCenterY = CanvasHeight / 2;
+            OffsetX = (CanvasWidth - maxX * Scale) / 2;
+            OffsetY = (CanvasHeight - maxY * Scale) / 2;
         }
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
