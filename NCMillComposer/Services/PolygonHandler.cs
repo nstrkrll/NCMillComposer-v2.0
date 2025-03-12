@@ -206,5 +206,76 @@ namespace NCMillComposer.Services
                 }
             }
         }
+
+        /// <summary>
+        /// Рассчитывает точки для последующей отрисовки на экране
+        /// </summary>
+        /// <param name="polygons">Список объектов</param>
+        /// <param name="width">Ширина холста</param>
+        /// <param name="height">Высота холста</param>
+        /// <returns>Список объектов для отрисовки</returns>
+        public static List<Polygon> GetPolygonsForDraw(List<Polygon> polygons, double width, double height)
+        {
+            var polygonsForDraw = new List<Polygon>();
+            var polygonsForDrawCounter = 0;
+            var maxX = polygons.Max(x => x.MaxX);
+            var maxY = polygons.Max(x => x.MaxY);
+            var scaleX = width / maxX;
+            var scaleY = height / maxY;
+            var scale = Math.Min(scaleX, scaleY);
+            var shiftX = (width - maxX * scale) / 2;
+            var shiftY = (height - maxY * scale) / 2;
+            var centerX = 0d;
+            var centerY = 0d;
+            for (var i = 0; i < polygons.Count; i++)
+            {
+                polygonsForDraw.Add(new Polygon() { ObjectType = polygons[i].ObjectType });
+                foreach (var point in polygons[i].Points)
+                {
+                    polygonsForDraw[polygonsForDrawCounter].Points.Add(new Point
+                    {
+                        X = point.X * scale + shiftX,
+                        Y = height - point.Y * scale - shiftY,
+                    });
+                }
+
+                polygonsForDrawCounter++;
+                if (polygons[i].ObjectType == 'P')
+                {
+                    centerX = polygons[i].MaxX - (polygons[i].MaxX - polygons[i].MinX) / 2;
+                    centerY = polygons[i].MaxY - (polygons[i].MaxY - polygons[i].MinY) / 2;
+                    polygonsForDraw.Add(new Polygon() { ObjectType = 'C' }); // добавляем новый объект и указываем его тип (С - центр)
+                    polygonsForDraw[polygonsForDrawCounter].Points.Add(new Point
+                    {
+                        X = centerX * scale + shiftX - 2,
+                        Y = height - centerY * scale - shiftY,
+                    });
+
+                    polygonsForDraw[polygonsForDrawCounter].Points.Add(new Point
+                    {
+                        X = centerX * scale + shiftX + 2,
+                        Y = height - centerY * scale - shiftY,
+                    });
+
+                    polygonsForDrawCounter++;
+                    polygonsForDraw.Add(new Polygon() { ObjectType = 'C' }); // добавляем новый объект и указываем его тип (С - центр)
+                    polygonsForDraw[polygonsForDrawCounter].Points.Add(new Point
+                    {
+                        X = centerX * scale + shiftX,
+                        Y = height - centerY * scale - shiftY - 2,
+                    });
+
+                    polygonsForDraw[polygonsForDrawCounter].Points.Add(new Point
+                    {
+                        X = centerX * scale + shiftX,
+                        Y = height - centerY * scale - shiftY + 2,
+                    });
+
+                    polygonsForDrawCounter++;
+                }
+            }
+
+            return polygonsForDraw;
+        }
     }
 }

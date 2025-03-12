@@ -1,35 +1,62 @@
-﻿using Microsoft.Win32;
-using NCMillComposer.Components;
+﻿using NCMillComposer.Components;
 using NCMillComposer.Models;
 using NCMillComposer.Services;
-using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Windows.Forms;
 using System.Windows.Input;
 
 namespace NCMillComposer.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        private ObservableCollection<Polygon> _polygons = [];
-        private double _canvasWidth = 600;
-        private double _canvasHeight = 800;
-        private double _offsetX;
-        private double _offsetY;
-        private double _scale = 1.0;
+        private string _openedFilePath;
+        private string _fileName;
+        private ObservableCollection<FileInfo> _filesList;
+        private List<Polygon> _polygons;
+        private ObservableCollection<Polygon> _polygonsForDraw;
+        private double _canvasWidth;
+        private double _canvasHeight;
 
         public event PropertyChangedEventHandler PropertyChanged;
-        public ICommand LoadCommand { get; private set; }
+        public ICommand OpenFileCommand { get; private set; }
+        public ICommand OnWindowLoadedCommand { get; private set; }
+        public ICommand OnWindowClosingCommand { get; private set; }
+        public ICommand SelectFirstDirectoryForSearchCommand { get; private set; }
+        public ICommand SelectSecondDirectoryForSearchCommand { get; private set; }
+        public ICommand OpenSelectedFileCommand { get; }
 
-        public ObservableCollection<Polygon> Polygons
+        public string Title
         {
-            get => _polygons;
+            get
+            {
+                return $"{Settings.ProgramName} {Settings.Version}" + (string.IsNullOrWhiteSpace(_fileName) ? "" : " - " + _fileName);
+            }
+        }
+
+        public ObservableCollection<FileInfo> FilesList
+        {
+            get => _filesList;
             set
             {
-                _polygons = value;
-                OnPropertyChanged();
+                _filesList = value;
+                OnPropertyChanged(nameof(FilesList));
+            }
+        }
+
+        public ObservableCollection<Polygon> PolygonsForDraw
+        {
+            get => _polygonsForDraw;
+            set
+            {
+                if (_polygonsForDraw != value)
+                {
+                    _polygonsForDraw = value;
+                    OnPropertyChanged(nameof(PolygonsForDraw));
+                }
             }
         }
 
@@ -38,9 +65,12 @@ namespace NCMillComposer.ViewModels
             get => _canvasWidth;
             set
             {
-                _canvasWidth = value;
-                OnPropertyChanged();
-                AdjustContours();
+                if (_canvasWidth != value && value > 0)
+                {
+                    _canvasWidth = value;
+                    OnPropertyChanged(nameof(CanvasWidth));
+                    RedrawObjects();
+                }
             }
         }
 
@@ -49,94 +79,128 @@ namespace NCMillComposer.ViewModels
             get => _canvasHeight;
             set
             {
-                _canvasHeight = value;
-                OnPropertyChanged();
-                AdjustContours();
-            }
-        }
-
-        public double OffsetX
-        {
-            get => _offsetX;
-            set 
-            { 
-                _offsetX = value; 
-                OnPropertyChanged(); 
-            }
-        }
-
-        public double OffsetY
-        {
-            get => _offsetY;
-            set 
-            { 
-                _offsetY = value; 
-                OnPropertyChanged(); 
-            }
-        }
-
-        public double Scale
-        {
-            get => _scale;
-            set 
-            { 
-                _scale = value; 
-                OnPropertyChanged(); 
+                if (_canvasHeight != value && value > 0)
+                {
+                    _canvasHeight = value;
+                    OnPropertyChanged(nameof(CanvasHeight));
+                    RedrawObjects();
+                }
             }
         }
 
         public MainViewModel()
         {
-            LoadCommand = new RelayCommand(LoadPLT);
+            OnPropertyChanged(nameof(Title));
+            _polygons = [];
+            _polygonsForDraw = [];
+            _filesList = [];
+            PropertyChanged = delegate { };
+            OnWindowLoadedCommand = new RelayCommand(OnWindowLoaded);
+            OnWindowClosingCommand = new RelayCommand(OnWindowClosing);
+            OpenFileCommand = new RelayCommand(OpenFile);
+            SelectFirstDirectoryForSearchCommand = new RelayCommand(SelectFirstDirectoryForSearch);
+            SelectSecondDirectoryForSearchCommand = new RelayCommand(SelectSecondDirectoryForSearch);
+            OpenSelectedFileCommand = new RelayCommand<FileInfo>(OpenSelectedFile);
         }
 
-        public void LoadPLT(object parameter)
+        private void OnWindowLoaded(object parameter)
         {
-            var openFileDialog = new OpenFileDialog
+            LoadFiles();
+        }
+
+        private void OnWindowClosing(object parameter)
+        {
+            MessageBox.Show("Закрытие окна");
+        }
+
+        private void OpenFile(object parameter)
+        {
+            using var openFileDialog = new OpenFileDialog
             {
                 Filter = "PLT files (*.plt)|*.plt"
             };
 
-            if (openFileDialog.ShowDialog() == true)
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                var polygons = PLTFileReader.ReadFile(openFileDialog.FileName);
-                PolygonHandler.SetPolygonsType(polygons);
-                PolygonHandler.ConnectOpenPolygons(polygons);
-                PolygonHandler.ConvertCoordinatesToMillimiters(polygons);
-                PolygonHandler.NormalizePolygonsCoordinates(polygons);
-                Polygons.Clear();
-                foreach (var polygon in polygons)
-                {
-                    Polygons.Add(polygon);
-                }
-
-                AdjustContours();
+                _openedFilePath = openFileDialog.FileName;
+                _fileName = openFileDialog.SafeFileName;
+                OnPropertyChanged(nameof(Title));
+                LoadPLT();
             }
         }
 
-        private void AdjustContours()
+        private void OpenSelectedFile(FileInfo parameter)
         {
-            if (Polygons.Count == 0)
-            {
-                return;
-            }
-
-            var maxX = Polygons.Max(x => x.MaxX);
-            var maxY = Polygons.Max(x => x.MaxY);
-            var minX = Polygons.Min(x => x.MinX);
-            var minY = Polygons.Min(x => x.MinY);
-            double scaleX = CanvasWidth / maxX;
-            double scaleY = CanvasHeight / maxY;
-            Scale = Math.Min(scaleX, scaleY);
-            double centerX = (minX + maxX) / 2;
-            double centerY = (minY + maxY) / 2;
-            double canvasCenterX = CanvasWidth / 2;
-            double canvasCenterY = CanvasHeight / 2;
-            OffsetX = (CanvasWidth - maxX * Scale) / 2;
-            OffsetY = (CanvasHeight - maxY * Scale) / 2;
+            _openedFilePath = parameter.FullName;
+            _fileName = parameter.Name;
+            OnPropertyChanged(nameof(Title));
+            LoadPLT();
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void LoadPLT()
+        {
+            _polygons = PLTFileReader.ReadFile(_openedFilePath);
+            PolygonHandler.SetPolygonsType(_polygons);
+            PolygonHandler.ConnectOpenPolygons(_polygons);
+            PolygonHandler.ConvertCoordinatesToMillimiters(_polygons);
+            PolygonHandler.NormalizePolygonsCoordinates(_polygons);
+            RedrawObjects();
+        }
+
+        private void SelectFirstDirectoryForSearch(object parameter)
+        {
+            using var dialog = new FolderBrowserDialog
+            {
+                ShowNewFolderButton = true,
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                Settings.FirstDirectoryForSearch = dialog.SelectedPath;
+            }
+
+            LoadFiles();
+        }
+        
+        private void SelectSecondDirectoryForSearch(object parameter)
+        {
+            using var dialog = new FolderBrowserDialog
+            {
+                ShowNewFolderButton = true,
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                Settings.SecondDirectoryForSearch = dialog.SelectedPath;
+            }
+
+            LoadFiles();
+        }
+
+        private void LoadFiles()
+        {
+            FilesList.Clear();
+            var filesList = FilesHandler.GetFilesList();
+            foreach (var file in filesList)
+            {
+                FilesList.Add(file);
+            }
+        }
+
+        private void RedrawObjects()
+        {
+            if (_polygons != null && _polygons.Count > 0)
+            {
+                var polygonsForDraw = PolygonHandler.GetPolygonsForDraw(_polygons, CanvasWidth - 10, CanvasHeight - 10);
+                PolygonsForDraw.Clear();
+                foreach (var polygon in polygonsForDraw)
+                {
+                    PolygonsForDraw.Add(polygon);
+                }
+            }
+        }
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

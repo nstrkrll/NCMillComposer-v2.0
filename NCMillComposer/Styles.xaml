@@ -50,6 +50,16 @@
         </Style.Resources>
     </Style>
 
+    <Style TargetType="ListBox">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Style.Resources>
+            <Style TargetType="{x:Type Border}">
+                <Setter Property="CornerRadius" Value="5" />
+            </Style>
+        </Style.Resources>
+    </Style>
+
     <Style TargetType="Button">
         <Setter Property="Background" Value="Transparent" />
         <Style.Resources>

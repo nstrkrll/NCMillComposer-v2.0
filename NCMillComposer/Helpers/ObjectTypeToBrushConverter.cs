@@ -9,17 +9,18 @@ namespace NCMillComposer.Helpers
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is not char objectType)
+            if (value is char objectType)
             {
-                return Brushes.Black;
+                return objectType switch
+                {
+                    'X' => Brushes.Gray,
+                    'L' => Brushes.Blue,
+                    'C' => Brushes.Green,
+                    _ => Brushes.Black,
+                };
             }
 
-            return objectType switch
-            {
-                'X' => Brushes.Gray,
-                'L' => Brushes.Blue,
-                _ => Brushes.Black,
-            };
+            return Brushes.Black;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

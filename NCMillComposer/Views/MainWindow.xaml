@@ -3,41 +3,325 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:NCMillComposer.Views" 
         xmlns:helpers="clr-namespace:NCMillComposer.Helpers" 
         mc:Ignorable="d"
-        Title="PLT Viewer" Height="600" Width="800">
+        Icon="\Resources\AppIcon\appicon.png"
+        Title="{Binding Title}" 
+        MinWidth="1240" 
+        MinHeight="800"
+        WindowState="Maximized">
     <Window.Resources>
-        <helpers:ObjectTypeToBrushConverter x:Key="ObjectTypeToBrushConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="\Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <helpers:ObjectTypeToBrushConverter x:Key="ObjectTypeToBrushConverter"/>
+        </ResourceDictionary>
     </Window.Resources>
+    
+    <i:Interaction.Behaviors>
+        <helpers:WindowLoadedBehavior Command="{Binding OnWindowLoadedCommand}"/>
+        <helpers:WindowClosingBehavior Command="{Binding OnWindowClosingCommand}"/>
+    </i:Interaction.Behaviors>
+    
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="140"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <Button Content="Load PLT" Command="{Binding LoadCommand}" HorizontalAlignment="Left" Margin="10"/>
-        <Canvas x:Name="DrawingCanvas" Grid.Row="1" Width="{Binding CanvasWidth}" Height="{Binding CanvasHeight}">
-            <Canvas.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}"/>
-                    <TranslateTransform X="{Binding OffsetX}" Y="{Binding OffsetY}"/>
-                </TransformGroup>
-            </Canvas.RenderTransform>
-            <ItemsControl ItemsSource="{Binding Polygons}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Polyline Points="{Binding Points}"
-                              Stroke="{Binding ObjectType, Converter={StaticResource ObjectTypeToBrushConverter}}"
-                              StrokeThickness="1"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Canvas>
+        <!-- Кнопки в левом верхнем углу -->
+        <Grid Grid.Row="0" Grid.Column="0" Margin="5,5,5,5">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Button Grid.Row="0" Command="{Binding OpenFileCommand}" Content="Открыть" Margin="0,0,0,5"/>
+            <TextBox TextAlignment="Left" Grid.Row="1" />
+            <Button Grid.Row="2" Content="Сохранить и закрыть" Margin="0,5,0,0"/>
+        </Grid>
+
+        <!-- Значения в верхней части окна -->
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="70"/>
+                <RowDefinition Height="70"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240"/>
+                <ColumnDefinition Width="165"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="165"/>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="90"/>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Row="0" Grid.Column="0" >
+                <Grid HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="70" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" FontSize="12" HorizontalAlignment="Center" Content="Старт Z  за   Проход   mm  Итог Z" />
+                    <TextBox Grid.Row="1" Grid.Column="0" />
+                    <TextBox Grid.Row="1" Grid.Column="2" />
+                    <TextBox Grid.Row="1" Grid.Column="4" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="0">
+                <Grid HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="70" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Content="Z неопасно" />
+                    <TextBox Grid.Row="1" Grid.Column="0" />
+                    <Label Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="D фрезы" />
+                    <TextBox Grid.Row="1" Grid.Column="2" />
+                    <Label Grid.Row="0" Grid.Column="3" Grid.ColumnSpan="2" HorizontalAlignment="Center" Content="Шпиндель" />
+                    <TextBox Grid.Row="1" Grid.Column="4" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="0" Grid.Column="1">
+                <Grid HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="70" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="G01 подача mm/мин Z" />
+                    <TextBox Grid.Row="1" Grid.Column="0" />
+                    <TextBox Grid.Row="1" Grid.Column="2" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="Обработка Закрытых векторов" />
+                    <ComboBox Grid.Row="1" Grid.Column="0" />
+                    <ComboBox Grid.Row="1" Grid.Column="2" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" HorizontalAlignment="Center" Content="Привязка Точек =0= -1- -2-" />
+                    <ComboBox Grid.Row="1" Grid.Column="0" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="3">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Открытые вектора" />
+                    <ComboBox Grid.Row="1" Grid.Column="0" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="0" Grid.Column="4">
+                <Grid HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="70" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="X mm  Точка -1-  Y mm" />
+                    <TextBox Grid.Row="1" Grid.Column="0" />
+                    <TextBox Grid.Row="1" Grid.Column="2" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="4">
+                <Grid HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="70" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" Content="X mm  Точка -2-  Y mm" />
+                    <TextBox Grid.Row="1" Grid.Column="0" />
+                    <TextBox Grid.Row="1" Grid.Column="2" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="0" Grid.Column="5" Grid.ColumnSpan="2">
+                <Grid HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Лазер Y" />
+                    <TextBox Grid.Row="1" Grid.Column="0" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="0" Grid.Column="7">
+                <Grid HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Скрыть &lt;" />
+                    <TextBox Grid.Row="1" Grid.Column="0" />
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Grid.Column="5" Margin="5">
+                <Button Padding="5" Height="40" >
+                    <Image Source="\Resources\Images\rotate.png" />
+                </Button>
+            </Grid>
+
+            <Border Grid.Row="1" Grid.Column="6" Grid.ColumnSpan="2">
+                <Grid HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" Content="Масштаб" />
+                    <Label Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" Content="Авто" />
+                    <TextBox Grid.Row="1" Grid.Column="0" />
+                    <CheckBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="0" Grid.Column="8" Grid.RowSpan="2" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="40"/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0" Padding="5" Command="{Binding SelectFirstDirectoryForSearchCommand}" >
+                    <Image Source="\Resources\Images\folder1.png" />
+                </Button>
+                <Button Grid.Row="2" Padding="5" Command="{Binding SelectSecondDirectoryForSearchCommand}" >
+                    <Image Source="\Resources\Images\folder2.png" />
+                </Button>
+                <Button Grid.Row="4" Padding="5" >
+                    <Image Source="\Resources\Images\folder_nc.png" />
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="0" Grid.Column="9" Grid.RowSpan="2" Margin="5">
+                <TextBox IsReadOnly="True" FontSize="12" TextAlignment="Left" VerticalContentAlignment="Top" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" />
+            </Grid>
+        </Grid>
+
+        <!-- Поле для выбора файла -->
+        <Border Grid.Row="1" Grid.Column="0">
+            <ListBox ItemsSource="{Binding FilesList}" DisplayMemberPath="Name">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="ToolTip" Value="{Binding Name}"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseDoubleClick">
+                        <i:InvokeCommandAction 
+                            Command="{Binding OpenSelectedFileCommand}" 
+                            CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=ListBox}}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <ListBox.InputBindings>
+                    <KeyBinding Key="Space"
+                        Command="{Binding OpenSelectedFileCommand}"
+                        CommandParameter="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType=ListBox}}"/>
+                </ListBox.InputBindings>
+            </ListBox>
+        </Border>
+        
+        <!-- Холст -->
+        <Border Grid.Row="1" Grid.Column="1" Padding="10" Margin="2.5" MinWidth="500" MinHeight="500">
+            <Grid>
+                <Image Source="\Resources\Images\background.png" MaxWidth="500" />
+                <Canvas>
+                    <i:Interaction.Behaviors>
+                        <helpers:SizeObserverBehavior Width="{Binding CanvasWidth, Mode=TwoWay}" Height="{Binding CanvasHeight, Mode=TwoWay}" />
+                    </i:Interaction.Behaviors>
+                    <ItemsControl ItemsSource="{Binding PolygonsForDraw}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Polyline Points="{Binding Points}"
+                      Stroke="{Binding ObjectType, Converter={StaticResource ObjectTypeToBrushConverter}}"
+                      StrokeThickness="1" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Canvas>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
